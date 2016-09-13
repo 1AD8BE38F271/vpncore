@@ -22,11 +22,11 @@ import (
 	"golang.org/x/sys/unix"
 	"os"
 	"fmt"
-	"github.com/FTwOoO/water/waterutil"
 	"encoding/binary"
 	"syscall"
-	"../routes"
-	"../dns"
+	"github.com/FTwOoO/vpncore/routes"
+	"github.com/FTwOoO/vpncore/dns"
+	"github.com/FTwOoO/vpncore/tcpip"
 )
 
 const (
@@ -78,9 +78,9 @@ func (utunF *UTunFile) Write(p []byte) (n int, err error) {
 
 	t := make([]byte, 4 + len(p))
 
-	if waterutil.IsIPv4(p) {
+	if tcpip.IsIPv4(p) {
 		binary.BigEndian.PutUint32(t, syscall.AF_INET)
-	} else if waterutil.IsIPv6(p) {
+	} else if tcpip.IsIPv6(p) {
 		binary.BigEndian.PutUint32(t, syscall.AF_INET6)
 	}
 
@@ -108,8 +108,8 @@ func newTAP(ifName string) (ifce *Interface, err error) {
 	ifce = &Interface{isTAP: true,
 		ReadWriteCloser: file,
 		name: ifName,
-		routes_m:router,
-		dns_m:new(dns.DNSManager),
+		routes:router,
+		dnsManager:new(dns.DNSManager),
 	}
 	return
 }
@@ -133,8 +133,8 @@ func newTUN(ifName string) (ifce *Interface, err error) {
 		isTAP: false,
 		ReadWriteCloser: &UTunFile{file:os.NewFile(fd, createdIfName)},
 		name: createdIfName,
-		routes_m:router,
-		dns_m:new(dns.DNSManager),
+		routesManager:router,
+		dnsManager:new(dns.DNSManager),
 	}
 	return
 }

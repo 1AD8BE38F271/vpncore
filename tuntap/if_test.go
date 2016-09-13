@@ -23,8 +23,8 @@ import (
 	"fmt"
 	"encoding/hex"
 	"sync"
-	"../tcpip"
-	"../cmd"
+	"github.com/FTwOoO/vpncore/tcpip"
+	"github.com/FTwOoO/vpncore/cmd"
 )
 
 const BUFFERSIZE = 1522
@@ -74,7 +74,7 @@ func testInterface(ifce *Interface, ip net.IP, subnet net.IPNet) {
 		panic(err)
 	}
 
-	err = ifce.RedirectGatewayToMe()
+	err = ifce.ClientRedirectGateway()
 	if err != nil {
 		panic(err)
 	}
@@ -148,7 +148,7 @@ func TestAll(t *testing.T) {
 	fmt.Printf("create %s\n", ifce.Name())
 	testInterface(ifce, ip, subnet)
 	new_dns := []net.IP{net.IP{8, 8, 8, 2}, net.IP{8, 8, 8, 8}}
-	ifce.SetupNewDNS(new_dns)
+	ifce.ClientSetupNewDNS(new_dns)
 	ifce.Destroy()
 
 	ifce2, err := NewTAP("tap1")

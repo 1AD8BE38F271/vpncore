@@ -23,7 +23,7 @@ import (
 	"syscall"
 	"unsafe"
 	"fmt"
-	"../routes"
+	"github.com/FTwOoO/vpncore/routes"
 )
 
 const (
@@ -60,8 +60,8 @@ func newTAP(ifName string) (ifce *Interface, err error) {
 	ifce = &Interface{isTAP: true,
 		ReadWriteCloser: file,
 		name: name,
-		routes_m:router,
-		dns_m:new(dns.DNSManager),
+		routes:router,
+		dnsManager:new(dns.DNSManager),
 	}
 	return
 }
@@ -92,8 +92,8 @@ func newTUN(ifName string) (ifce *Interface, err error) {
 	ifce = &Interface{isTAP: false,
 		ReadWriteCloser: file,
 		name: name,
-		routes_m:router,
-		dns_m:new(dns.DNSManager),
+		routesManager:router,
+		dnsManager:new(dns.DNSManager),
 
 	}
 	return

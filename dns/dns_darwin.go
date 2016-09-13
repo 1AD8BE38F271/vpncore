@@ -24,7 +24,7 @@ import (
 	"regexp"
 	"net/textproto"
 	"errors"
-	"../cmd"
+	"github.com/FTwOoO/vpncore/cmd"
 )
 
 func (self *DNSManager) SetupNewDNS(new_dns []net.IP) (err error) {

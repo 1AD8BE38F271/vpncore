@@ -28,7 +28,7 @@ import (
 	"bytes"
 	"fmt"
 	"net"
-	"../cmd"
+	"github.com/FTwOoO/vpncore/cmd"
 )
 
 func addRouteToNet(iface string, subnet net.IPNet, nextHop net.IP) (err error) {

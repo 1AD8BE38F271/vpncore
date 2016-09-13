@@ -21,7 +21,7 @@ import (
 	"net"
 	"fmt"
 	"errors"
-	"../cmd"
+	"github.com/FTwOoO/vpncore/cmd"
 )
 
 func maskToString(m net.IPMask) string {
@@ -35,14 +35,16 @@ func maskToString(m net.IPMask) string {
 func (ifce *Interface) SetupNetwork(ip net.IP, subnet net.IPNet, mtu int) (err error) {
 
 	var c string
+	var peer_ip net.IP
 
 	err = ifce.changeMTU(mtu)
 	if err != nil {
 		return err
 	}
 
+
 	if ifce.IsTUN() {
-		peer_ip := generatePeerIP(ip)
+		peer_ip = generatePeerIP(ip)
 		c = fmt.Sprintf("ifconfig %s inet %s %s netmask %s",
 			ifce.Name(), ip.String(), peer_ip.String(), maskToString(subnet.Mask))
 	} else {
@@ -54,14 +56,18 @@ func (ifce *Interface) SetupNetwork(ip net.IP, subnet net.IPNet, mtu int) (err e
 	if err != nil {
 		return
 	} else {
-		ifce.SetIP(ip, subnet)
+		ifce.ip = ip
+		ifce.subnet = subnet
+		if ifce.IsTUN() {
+			ifce.peer_ip = peer_ip
+		}
 	}
 
 	err = ifce.setupRoutes()
 	return
 }
 
-func (ifce *Interface) SetupNATForServer() (err error) {
+func (ifce *Interface) ServerSetupNatRules() (err error) {
 	panic("Not implemented for this platform")
 }
 
@@ -82,7 +88,7 @@ func (ifce *Interface) setupRoutes() (err error) {
 		return errors.New("Setup interface IP first!")
 	}
 
-	err = ifce.routes_m.AddRouteToNet(ifce.Name(), ifce.subnet, ifce.IP())
+	err = ifce.routesManager.AddRouteToNet(ifce.Name(), ifce.subnet, ifce.IP())
 	return
 }
 

@@ -40,6 +40,7 @@ func setUpHWAddr(ifce *Interface) (err error) {
 func (ifce *Interface) SetupNetwork(ip net.IP, subnet net.IPNet, mtu int) (err error) {
 
 	var c string
+	var peer_ip net.IP
 
 	err = ifce.changeMTU(mtu)
 	if err != nil {
@@ -47,7 +48,7 @@ func (ifce *Interface) SetupNetwork(ip net.IP, subnet net.IPNet, mtu int) (err e
 	}
 
 	if ifce.IsTUN() {
-		peer_ip := generatePeerIP(ip)
+		peer_ip = generatePeerIP(ip)
 		c = fmt.Sprintf("ip addr add dev %s %s peer %s", ifce.Name(), ip.String(), peer_ip.String())
 	} else {
 		c = fmt.Sprintf("ip addr add dev %s add %s", ifce.Name(), ip.String())
@@ -56,7 +57,11 @@ func (ifce *Interface) SetupNetwork(ip net.IP, subnet net.IPNet, mtu int) (err e
 	if err != nil {
 		return err
 	} else {
-		ifce.SetIP(ip, subnet)
+		ifce.ip = ip
+		ifce.subnet = subnet
+		if ifce.IsTUN() {
+			ifce.peer_ip = peer_ip
+		}
 
 	}
 
@@ -75,13 +80,13 @@ func (ifce *Interface) SetupNetwork(ip net.IP, subnet net.IPNet, mtu int) (err e
 	return
 }
 
-func (ifce *Interface) SetupNATForServer() (err error) {
+func (ifce *Interface) ServerSetupNatRules() (err error) {
 
 	subnet := ifce.Net()
 
-	cmd1 := fmt.Sprintf("iptables -t nat -A POSTROUTING -o %s -s %s -j MASQUERADE", ifce.routes_m.default_nic, subnet.String())
-	cmd2 := fmt.Sprintf("iptables -A FORWARD -d %s -i %s -o %s -j ACCEPT", subnet.String(), ifce.routes_m.default_nic, ifce.Name())
-	cmd3 := fmt.Sprintf("iptables -A FORWARD -s %s -i %s -o %s -j ACCEPT", subnet.String(), ifce.Name(), ifce.routes_m.default_nic)
+	cmd1 := fmt.Sprintf("iptables -t nat -A POSTROUTING -o %s -s %s -j MASQUERADE", ifce.routesManager.default_nic, subnet.String())
+	cmd2 := fmt.Sprintf("iptables -A FORWARD -d %s -i %s -o %s -j ACCEPT", subnet.String(), ifce.routesManager.default_nic, ifce.Name())
+	cmd3 := fmt.Sprintf("iptables -A FORWARD -s %s -i %s -o %s -j ACCEPT", subnet.String(), ifce.Name(), ifce.routesManager.default_nic)
 	cmd4 := "sysctl net.ipv4.ip_forward=1"
 
 	_, err = cmd.RunCommand(cmd1)
@@ -122,7 +127,7 @@ func (ifce *Interface) setupRoutes() (err error) {
 		return errors.New("Setup interface IP first!")
 	}
 
-	err = ifce.routes_m.AddRouteToNet(ifce.Name(), ifce.subnet, ifce.IP())
+	err = ifce.routesManager.AddRouteToNet(ifce.Name(), ifce.subnet, ifce.IP())
 	return
 }
 

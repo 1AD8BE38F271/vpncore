@@ -19,8 +19,8 @@ package tuntap
 import (
 	"io"
 	"net"
-	"../dns"
-	"../routes"
+	"github.com/FTwOoO/vpncore/dns"
+	"github.com/FTwOoO/vpncore/routes"
 )
 
 const (
@@ -30,15 +30,15 @@ const (
 
 // Interface is a TUN/TAP interface.
 type Interface struct {
-	ip       net.IP
-	subnet   net.IPNet
-	peer_ip  net.IP
-	isTAP    bool
+	ip            net.IP
+	subnet        net.IPNet
+	peer_ip       net.IP
+	isTAP         bool
 	io.ReadWriteCloser
-	name     string
+	name          string
 
-	routes_m *routes.RoutesManager
-	dns_m    *dns.DNSManager
+	routesManager *routes.RoutesManager
+	dnsManager    *dns.DNSManager
 }
 
 // Create a new TAP interface whose name is ifName.
@@ -87,47 +87,40 @@ func (ifce *Interface) Name() string {
 }
 
 func (ifce *Interface) DefaultNic() string {
-	return ifce.routes_m.DefaultNic
+	return ifce.routesManager.DefaultNic
 }
 
 func (ifce *Interface) DefaultGateway() net.IP {
-	return ifce.routes_m.DefaultGateway
+	return ifce.routesManager.DefaultGateway
 }
 
 func (ifce *Interface) Router() *routes.RoutesManager {
-	return ifce.routes_m
+	return ifce.routesManager
 }
 
-func (ifce *Interface) SetIP(ip net.IP, subnet net.IPNet) {
-	// TODO: check if ip is in net
-	ifce.ip = ip
-	ifce.subnet = subnet
-	if ifce.IsTUN() {
-		ifce.peer_ip = generatePeerIP(ip)
-	}
-}
 
 func (ifce *Interface) Destroy() {
-	ifce.routes_m.DeleteAllRoutes()
-	ifce.routes_m.RestoreGateWay()
-	ifce.dns_m.RestoreDNS()
+	ifce.routesManager.DeleteAllRoutes()
+	ifce.routesManager.RestoreGateWay()
+	ifce.dnsManager.RestoreDNS()
 }
 
-func (ifce *Interface) RedirectGatewayToMe() (err error) {
-	return ifce.routes_m.SetNewGateway(ifce.Name(), ifce.IP())
+func (ifce *Interface) ClientRedirectGateway() (err error) {
+	//For Client
+	return ifce.routesManager.SetNewGateway(ifce.Name(), ifce.IP())
 }
 
-func (ifce *Interface) SetupNewDNS(new_dns []net.IP) (err error) {
-	err = ifce.dns_m.SetupNewDNS(new_dns)
+func (ifce *Interface) ClientSetupNewDNS(new_dns []net.IP) (err error) {
+	//For Client
+	err = ifce.dnsManager.SetupNewDNS(new_dns)
 	if err != nil {
 		return err
 	}
 
 	for _, dns_ip := range new_dns {
-		ifce.routes_m.AddRouteToHost(ifce.Name(), dns_ip, ifce.IP())
+		ifce.routesManager.AddRouteToHost(ifce.Name(), dns_ip, ifce.IP())
 	}
 
 	return nil
-
 }
 

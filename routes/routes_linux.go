@@ -28,7 +28,7 @@ import (
 	"net"
 	"os"
 	"strconv"
-	"../cmd"
+	"github.com/FTwOoO/vpncore/cmd"
 
 )
 
