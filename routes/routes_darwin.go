@@ -19,7 +19,7 @@
 
 // Handle virtual interfaces
 
-package vpncore
+package routes
 
 import (
 	"bufio"
@@ -28,12 +28,13 @@ import (
 	"bytes"
 	"fmt"
 	"net"
+	"../cmd"
 )
 
 func addRouteToNet(iface string, subnet net.IPNet, nextHop net.IP) (err error) {
 
-	cmd := fmt.Sprintf("route add -net %s %s", subnet.String(), nextHop.String())
-	_, err = runCommand(cmd)
+	c := fmt.Sprintf("route add -net %s %s", subnet.String(), nextHop.String())
+	_, err = cmd.RunCommand(c)
 
 	if err != nil {
 		return
@@ -43,8 +44,8 @@ func addRouteToNet(iface string, subnet net.IPNet, nextHop net.IP) (err error) {
 
 func addRouteToHost(iface string, dest net.IP, nextHop net.IP) (err error) {
 
-	cmd := fmt.Sprintf("route add -host %s %s", dest.String(), nextHop.String())
-	_, err = runCommand(cmd)
+	c := fmt.Sprintf("route add -host %s %s", dest.String(), nextHop.String())
+	_, err = cmd.RunCommand(c)
 
 	if err != nil {
 		return
@@ -53,8 +54,8 @@ func addRouteToHost(iface string, dest net.IP, nextHop net.IP) (err error) {
 }
 
 func delNetRoute(dest net.IPNet) error {
-	cmd := fmt.Sprintf("route delete -net %s", dest.String())
-	_, err := runCommand(cmd)
+	c := fmt.Sprintf("route delete -net %s", dest.String())
+	_, err := cmd.RunCommand(c)
 
 	if err != nil {
 		return err
@@ -63,8 +64,8 @@ func delNetRoute(dest net.IPNet) error {
 }
 
 func delHostRoute(dest net.IP) error {
-	cmd := fmt.Sprintf("route delete -host %s", dest.String())
-	_, err := runCommand(cmd)
+	c := fmt.Sprintf("route delete -host %s", dest.String())
+	_, err := cmd.RunCommand(c)
 
 	if err != nil {
 		return err
@@ -73,14 +74,14 @@ func delHostRoute(dest net.IP) error {
 }
 
 func redirectGateway(iface string, gw net.IP) error {
-	cmd := "route delete default"
-	_, err := runCommand(cmd)
+	c := "route delete default"
+	_, err := cmd.RunCommand(c)
 	if err != nil {
 		return err
 	}
 
-	cmd = fmt.Sprintf("route add -net 0.0.0.0 %s", gw.String())
-	_, err = runCommand(cmd)
+	c = fmt.Sprintf("route add -net 0.0.0.0 %s", gw.String())
+	_, err = cmd.RunCommand(c)
 
 	if err != nil {
 		return err
@@ -90,14 +91,14 @@ func redirectGateway(iface string, gw net.IP) error {
 }
 
 func restoreGateWay(ifce string, gw net.IP) (err error) {
-	cmd := "route delete default"
-	_, err = runCommand(cmd)
+	c := "route delete default"
+	_, err = cmd.RunCommand(c)
 	if err != nil {
 		return err
 	}
 
-	cmd = fmt.Sprintf("route add default %s", gw.String())
-	_, err = runCommand(cmd)
+	c = fmt.Sprintf("route add default %s", gw.String())
+	_, err = cmd.RunCommand(c)
 
 	if err != nil {
 		return err
@@ -107,7 +108,7 @@ func restoreGateWay(ifce string, gw net.IP) (err error) {
 
 func (self *RoutesManager) GetCurrentNetGateway() (gw net.IP, dev string, err error) {
 
-	out, err := runCommand("netstat -rn")
+	out, err := cmd.RunCommand("netstat -rn")
 	if err != nil {
 		return
 	}

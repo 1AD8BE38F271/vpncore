@@ -14,53 +14,16 @@
  *
  * Author: FTwOoO <booobooob@gmail.com>
  */
-package vpncore
+
+package cmd
 
 import (
-	"net"
-	"regexp"
-	"strconv"
-	"fmt"
 	"strings"
 	"os/exec"
+	"fmt"
 )
 
-func generatePeerIP(ip net.IP) (peerIp net.IP) {
-	peerIp = net.IP(make([]byte, 4))
-	copy([]byte(peerIp), []byte(ip.To4()))
-	peerIp[3]++
-	return
-}
-
-func checkTunName(ifName string) bool {
-	rex, _ := regexp.Compile("tun\\d+")
-	if ! rex.MatchString(ifName) {
-		return false
-	}
-	return true
-}
-
-func checkTapName(ifName string) bool {
-	rex, _ := regexp.Compile("tap\\d+")
-	if ! rex.MatchString(ifName) {
-		return false
-	}
-	return true
-}
-
-func getTunTapIndex(ifName string) (index int, err error) {
-	rex, _ := regexp.Compile("tap|tun(\\d+)")
-	if ! rex.MatchString(ifName) {
-		return 0, fmt.Errorf("Error tun/tap name:%s", ifName)
-	}
-
-	ifNum := rex.FindStringSubmatch(ifName)[1]
-	index, err = strconv.Atoi(ifNum)
-	return
-
-}
-
-func runCommand(cmd string) (out string, err error) {
+func RunCommand(cmd string) (out string, err error) {
 
 	args := strings.Split(cmd, " ")
 	command := exec.Command(args[0], args[1:]...)

@@ -15,12 +15,13 @@
  *
  * Author: FTwOoO <booobooob@gmail.com>
  */
-package vpncore
+package tuntap
 
 import (
 	"net"
 	"fmt"
 	"errors"
+	"../cmd"
 )
 
 func maskToString(m net.IPMask) string {
@@ -33,7 +34,7 @@ func maskToString(m net.IPMask) string {
 
 func (ifce *Interface) SetupNetwork(ip net.IP, subnet net.IPNet, mtu int) (err error) {
 
-	var cmd string
+	var c string
 
 	err = ifce.changeMTU(mtu)
 	if err != nil {
@@ -42,14 +43,14 @@ func (ifce *Interface) SetupNetwork(ip net.IP, subnet net.IPNet, mtu int) (err e
 
 	if ifce.IsTUN() {
 		peer_ip := generatePeerIP(ip)
-		cmd = fmt.Sprintf("ifconfig %s inet %s %s netmask %s",
+		c = fmt.Sprintf("ifconfig %s inet %s %s netmask %s",
 			ifce.Name(), ip.String(), peer_ip.String(), maskToString(subnet.Mask))
 	} else {
-		cmd = fmt.Sprintf("ifconfig %s inet %s netmask %s",
+		c = fmt.Sprintf("ifconfig %s inet %s netmask %s",
 			ifce.Name(), ip.String(), maskToString(subnet.Mask))
 	}
 
-	_, err = runCommand(cmd)
+	_, err = cmd.RunCommand(c)
 	if err != nil {
 		return
 	} else {
@@ -66,8 +67,8 @@ func (ifce *Interface) SetupNATForServer() (err error) {
 
 func (ifce *Interface) changeMTU(mtu int) (err error) {
 
-	cmd := fmt.Sprintf("ifconfig %s mtu %d", ifce.Name(), mtu)
-	_, err = runCommand(cmd)
+	c := fmt.Sprintf("ifconfig %s mtu %d", ifce.Name(), mtu)
+	_, err = cmd.RunCommand(c)
 	if err != nil {
 		return err
 	}

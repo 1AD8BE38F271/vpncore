@@ -14,7 +14,7 @@
  *
  * Author: FTwOoO <booobooob@gmail.com>
  */
-package vpncore
+package routes
 
 import (
 	"net"
@@ -23,8 +23,8 @@ import (
 )
 
 type RoutesManager struct {
-	default_gateway    net.IP
-	default_nic        string
+	DefaultGateway     net.IP
+	DefaultNic         string
 
 	is_gateway_changed bool
 	host_routes        map[string]net.IP
@@ -43,8 +43,8 @@ func NewRoutesManager() (m *RoutesManager, err error) {
 	m.host_routes = map[string]net.IP{}
 	m.net_routes = map[string]net.IP{}
 
-	m.default_gateway = old_gateway
-	m.default_nic = old_nic
+	m.DefaultGateway = old_gateway
+	m.DefaultNic = old_nic
 	return
 
 }
@@ -114,7 +114,7 @@ func (self *RoutesManager) RestoreGateWay() (err error) {
 	self.mu.Lock()
 	defer self.mu.Unlock()
 
-	if self.default_gateway == nil {
+	if self.DefaultGateway == nil {
 		return errors.New("Dont need to reset gateway!")
 	}
 
@@ -122,7 +122,7 @@ func (self *RoutesManager) RestoreGateWay() (err error) {
 		return
 	}
 
-	err = restoreGateWay(self.default_nic, self.default_gateway)
+	err = restoreGateWay(self.DefaultNic, self.DefaultGateway)
 	if err != nil {
 		return
 	}

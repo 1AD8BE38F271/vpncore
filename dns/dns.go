@@ -14,7 +14,7 @@
  *
  * Author: FTwOoO <booobooob@gmail.com>
  */
-package vpncore
+package dns
 
 import (
 	"strings"

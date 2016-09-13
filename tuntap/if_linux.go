@@ -15,7 +15,7 @@
  *
  * Author: FTwOoO <booobooob@gmail.com>
  */
-package vpncore
+package tuntap
 
 import (
 	"net"
@@ -28,18 +28,18 @@ func setUpHWAddr(ifce *Interface) (err error) {
 		return fmt.Errorf("dont set hw addr to Tun device!")
 	}
 
-	cmd := fmt.Sprintf("ip link set dev %s address %s broadcast %s",
+	c := fmt.Sprintf("ip link set dev %s address %s broadcast %s",
 		ifce.Name(),
 		fmt.Sprintf("%s%02x", DEFAULT_HWADDR_PREFIX, ifce.IP()[3]),
 		DEFUALT_HWADDR_BRD)
 
-	_, err = runCommand(cmd)
+	_, err = cmd.RunCommand(c)
 	return
 }
 
 func (ifce *Interface) SetupNetwork(ip net.IP, subnet net.IPNet, mtu int) (err error) {
 
-	var cmd string
+	var c string
 
 	err = ifce.changeMTU(mtu)
 	if err != nil {
@@ -48,11 +48,11 @@ func (ifce *Interface) SetupNetwork(ip net.IP, subnet net.IPNet, mtu int) (err e
 
 	if ifce.IsTUN() {
 		peer_ip := generatePeerIP(ip)
-		cmd = fmt.Sprintf("ip addr add dev %s %s peer %s", ifce.Name(), ip.String(), peer_ip.String())
+		c = fmt.Sprintf("ip addr add dev %s %s peer %s", ifce.Name(), ip.String(), peer_ip.String())
 	} else {
-		cmd = fmt.Sprintf("ip addr add dev %s add %s", ifce.Name(), ip.String())
+		c = fmt.Sprintf("ip addr add dev %s add %s", ifce.Name(), ip.String())
 	}
-	_, err = runCommand(cmd)
+	_, err = cmd.RunCommand(c)
 	if err != nil {
 		return err
 	} else {
@@ -63,7 +63,7 @@ func (ifce *Interface) SetupNetwork(ip net.IP, subnet net.IPNet, mtu int) (err e
 	if ifce.IsTAP() {
 		err = setUpHWAddr(ifce)
 	} else {
-		_, err = runCommand(fmt.Sprintf("ip link set %s up", ifce.Name()))
+		_, err = cmd.RunCommand(fmt.Sprintf("ip link set %s up", ifce.Name()))
 	}
 
 	if err != nil {
@@ -84,20 +84,20 @@ func (ifce *Interface) SetupNATForServer() (err error) {
 	cmd3 := fmt.Sprintf("iptables -A FORWARD -s %s -i %s -o %s -j ACCEPT", subnet.String(), ifce.Name(), ifce.routes_m.default_nic)
 	cmd4 := "sysctl net.ipv4.ip_forward=1"
 
-	_, err = runCommand(cmd1)
+	_, err = cmd.RunCommand(cmd1)
 	if err != nil {
 		return
 	}
-	_, err = runCommand(cmd2)
+	_, err = cmd.RunCommand(cmd2)
 	if err != nil {
 		return
 	}
-	_, err = runCommand(cmd3)
+	_, err = cmd.RunCommand(cmd3)
 	if err != nil {
 		return
 	}
 
-	_, err = runCommand(cmd4)
+	_, err = cmd.RunCommand(cmd4)
 	if err != nil {
 		return
 	}
@@ -107,8 +107,8 @@ func (ifce *Interface) SetupNATForServer() (err error) {
 
 func (ifce *Interface) changeMTU(mtu int) (err error) {
 
-	cmd := fmt.Sprintf("ip link set dev %s up mtu %d qlen 100", ifce.Name(), mtu)
-	_, err = runCommand(cmd)
+	c := fmt.Sprintf("ip link set dev %s up mtu %d qlen 100", ifce.Name(), mtu)
+	_, err = cmd.RunCommand(c)
 	if err != nil {
 		return err
 	}

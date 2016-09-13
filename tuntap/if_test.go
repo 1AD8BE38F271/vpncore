@@ -14,7 +14,7 @@
  *
  * Author: FTwOoO <booobooob@gmail.com>
  */
-package vpncore
+package tuntap
 
 import (
 	"testing"
@@ -23,6 +23,8 @@ import (
 	"fmt"
 	"encoding/hex"
 	"sync"
+	"../tcpip"
+	"../cmd"
 )
 
 const BUFFERSIZE = 1522
@@ -49,8 +51,8 @@ func startPing(dst net.IP) {
 	c := time.After(1 * time.Second)
 	select {
 	case <-c:
-		cmd := fmt.Sprintf("ping -c 5 %s", dst.String())
-		runCommand(cmd)
+		c := fmt.Sprintf("ping -c 5 %s", dst.String())
+		cmd.RunCommand(c)
 		return
 	}
 }
@@ -93,30 +95,30 @@ func testInterface(ifce *Interface, ip net.IP, subnet net.IPNet) {
 	for {
 		select {
 		case buffer := <-dataCh:
-			var ipPacket waterutil.IPv4Packet
+			var ipPacket tcpip.IPv4Packet
 
 			if ifce.IsTAP() {
-				ethertype := waterutil.MACPacket(buffer).MACEthertype()
-				if ethertype != waterutil.IPv4 {
+				ethertype := tcpip.MACPacket(buffer).MACEthertype()
+				if ethertype != tcpip.IPv4 {
 					continue readFrame
 				}
-				if !waterutil.IsBroadcast(waterutil.MACPacket(buffer).MACDestination()) {
+				if !tcpip.IsBroadcast(tcpip.MACPacket(buffer).MACDestination()) {
 					continue readFrame
 				}
 
-				ipPacket = waterutil.IPv4Packet(waterutil.MACPacket(buffer).MACPayload())
+				ipPacket = tcpip.IPv4Packet(tcpip.MACPacket(buffer).MACPayload())
 			} else {
-				ipPacket = waterutil.IPv4Packet(buffer)
+				ipPacket = tcpip.IPv4Packet(buffer)
 			}
 
-			if !waterutil.IsIPv4(ipPacket) {
+			if !tcpip.IsIPv4(ipPacket) {
 				continue readFrame
 			}
 
 			if !ipPacket.SourceIP().Equal(ifce.IP()) {
 				continue readFrame
 			}
-			if ipPacket.Protocol() != waterutil.ICMP {
+			if ipPacket.Protocol() != tcpip.ICMP {
 				continue readFrame
 			}
 			fmt.Printf("Received ICMP frame: %#v\n", hex.EncodeToString(ipPacket))

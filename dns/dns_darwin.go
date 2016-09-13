@@ -14,7 +14,7 @@
  *
  * Author: FTwOoO <booobooob@gmail.com>
  */
-package vpncore
+package dns
 
 import (
 	"net"
@@ -24,6 +24,7 @@ import (
 	"regexp"
 	"net/textproto"
 	"errors"
+	"../cmd"
 )
 
 func (self *DNSManager) SetupNewDNS(new_dns []net.IP) (err error) {
@@ -34,7 +35,7 @@ func (self *DNSManager) SetupNewDNS(new_dns []net.IP) (err error) {
 	}
 
 	l := (DNSList)(new_dns)
-	_, err = runCommand(fmt.Sprintf("networksetup -setdnsservers WI-Fi %s", l.String()))
+	_, err = cmd.RunCommand(fmt.Sprintf("networksetup -setdnsservers WI-Fi %s", l.String()))
 	if err != nil {
 		return
 	}
@@ -49,7 +50,7 @@ func (self *DNSManager) RestoreDNS() (err error) {
 		return nil
 	}
 
-	_, err = runCommand(fmt.Sprintf("networksetup -setdnsservers WI-Fi %s", self.old_dns.String()))
+	_, err = cmd.RunCommand(fmt.Sprintf("networksetup -setdnsservers WI-Fi %s", self.old_dns.String()))
 	if err != nil {
 		return
 	}
@@ -65,7 +66,7 @@ func (self *DNSManager) GetCurrentDNS() (l DNSList, err error) {
 		return
 	}
 
-	out, err := runCommand("networksetup -listnetworkserviceorder")
+	out, err := cmd.RunCommand("networksetup -listnetworkserviceorder")
 	if err != nil {
 		return
 	}
@@ -100,7 +101,7 @@ func (self *DNSManager) GetCurrentDNS() (l DNSList, err error) {
 		return nil, fmt.Errorf("Cant get current DNS for device %s!", current_device)
 	}
 
-	out, err = runCommand(fmt.Sprintf("networksetup -getdnsservers %s", hardware))
+	out, err = cmd.RunCommand(fmt.Sprintf("networksetup -getdnsservers %s", hardware))
 
 	ips := strings.Split(out, "\n")
 
@@ -123,7 +124,7 @@ func (self *DNSManager) GetCurrentDNS() (l DNSList, err error) {
 }
 
 func (self *DNSManager) getActiveDevice() (device string, err error) {
-	out, err := runCommand("ifconfig")
+	out, err := cmd.RunCommand("ifconfig")
 	reader := bufio.NewReader(strings.NewReader(out))
 	var current_device string
 

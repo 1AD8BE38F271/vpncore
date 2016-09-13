@@ -14,11 +14,13 @@
  *
  * Author: FTwOoO <booobooob@gmail.com>
  */
-package vpncore
+package tuntap
 
 import (
 	"io"
 	"net"
+	"../dns"
+	"../routes"
 )
 
 const (
@@ -35,8 +37,8 @@ type Interface struct {
 	io.ReadWriteCloser
 	name     string
 
-	routes_m *RoutesManager
-	dns_m    *DNSManager
+	routes_m *routes.RoutesManager
+	dns_m    *dns.DNSManager
 }
 
 // Create a new TAP interface whose name is ifName.
@@ -85,14 +87,14 @@ func (ifce *Interface) Name() string {
 }
 
 func (ifce *Interface) DefaultNic() string {
-	return ifce.routes_m.default_nic
+	return ifce.routes_m.DefaultNic
 }
 
 func (ifce *Interface) DefaultGateway() net.IP {
-	return ifce.routes_m.default_gateway
+	return ifce.routes_m.DefaultGateway
 }
 
-func (ifce *Interface) Router() *RoutesManager {
+func (ifce *Interface) Router() *routes.RoutesManager {
 	return ifce.routes_m
 }
 

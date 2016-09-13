@@ -15,7 +15,7 @@
  *
  * Author: FTwOoO <booobooob@gmail.com>
  */
-package vpncore
+package tuntap
 
 import (
 	"os"
@@ -23,6 +23,7 @@ import (
 	"syscall"
 	"unsafe"
 	"fmt"
+	"../routes"
 )
 
 const (
@@ -51,7 +52,7 @@ func newTAP(ifName string) (ifce *Interface, err error) {
 		return nil, err
 	}
 
-	router, err := NewRoutesManager()
+	router, err := routes.NewRoutesManager()
 	if err != nil {
 		return nil, err
 	}
@@ -60,7 +61,7 @@ func newTAP(ifName string) (ifce *Interface, err error) {
 		ReadWriteCloser: file,
 		name: name,
 		routes_m:router,
-		dns_m:new(DNSManager),
+		dns_m:new(dns.DNSManager),
 	}
 	return
 }
@@ -83,7 +84,7 @@ func newTUN(ifName string) (ifce *Interface, err error) {
 		return nil, err
 	}
 
-	router, err := NewRoutesManager()
+	router, err := routes.NewRoutesManager()
 	if err != nil {
 		return nil, err
 	}
@@ -92,7 +93,7 @@ func newTUN(ifName string) (ifce *Interface, err error) {
 		ReadWriteCloser: file,
 		name: name,
 		routes_m:router,
-		dns_m:new(DNSManager),
+		dns_m:new(dns.DNSManager),
 
 	}
 	return
