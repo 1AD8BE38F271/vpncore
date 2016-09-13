@@ -60,7 +60,7 @@ func newTAP(ifName string) (ifce *Interface, err error) {
 	ifce = &Interface{isTAP: true,
 		ReadWriteCloser: file,
 		name: name,
-		routes:router,
+		routesManager:router,
 		dnsManager:new(dns.DNSManager),
 	}
 	return
