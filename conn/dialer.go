@@ -32,7 +32,7 @@ func (p *ConnectionDialer) Dial(network, addr string) (net.Conn, error) {
 	return p.dialer.Dial(network, addr)
 }
 
-func NewDialer(protoUrl string) (proxy *ConnectionDialer, err error) {
+func NewDialer(protoUrl string) (d *ConnectionDialer, err error) {
 	u, err := url.Parse(protoUrl)
 	if err != nil {
 		return nil, err
@@ -43,10 +43,10 @@ func NewDialer(protoUrl string) (proxy *ConnectionDialer, err error) {
 		return nil, err
 	}
 
-	proxy = &ConnectionDialer{
+	d = &ConnectionDialer{
 		Url:    u,
 		dialer: dailer,
 	}
 
-	return proxy, nil
+	return
 }

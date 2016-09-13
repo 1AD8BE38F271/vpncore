@@ -30,14 +30,15 @@ const (
 )
 
 type Listener struct {
-	net.Listener
+	listener net.Listener
+	proto TransProtocol
 	//block cipher.Block
 }
 
-func NewListener(proto TransProtocol, addr net.Addr) (*net.Listener, error) {
+func NewListener(proto TransProtocol, addr net.Addr) (net.Listener, error) {
 	switch proto {
 	case PROTO_KCP:
-		return &KCPListener{}, nil
+		return &Listener{proto:proto, listener:&KCPListener{}}, nil
 	default:
 		return nil, errors.New("UNKOWN PROTOCOL!")
 	}
@@ -45,11 +46,22 @@ func NewListener(proto TransProtocol, addr net.Addr) (*net.Listener, error) {
 
 func (l *Listener) Accept() (conn net.Conn, err error) {
 	for {
-		conn, err = l.Listener.Accept()
+		conn, err = l.listener.Accept()
 		if err != nil {
 			return
 		}
 
 	}
 	return
+}
+
+// Close closes the listener.
+// Any blocked Accept operations will be unblocked and return errors.
+func (l *Listener) Close() error {
+	return l.listener.Close()
+}
+
+// Addr returns the listener's network address.
+func (l *Listener) Addr() net.Addr {
+	return l.listener.Addr()
 }

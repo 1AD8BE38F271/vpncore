@@ -20,16 +20,23 @@ package conn
 import "net"
 
 type KCPListener struct {
+	*net.TCPListener
 
 }
 
 
 // Accept waits for and returns the next connection to the listener.
-func (conn *KCPListener)Accept() (net.Conn, error)
+func (conn *KCPListener)Accept() (net.Conn, error) {
+	return nil, nil
+}
 
 // Close closes the listener.
 // Any blocked Accept operations will be unblocked and return errors.
-func (conn *KCPListener) Close() error
+func (conn *KCPListener) Close() error {
+	return nil
+}
 
 // Addr returns the listener's network address.
-func (conn *KCPListener) Addr() net.Addr
+func (conn *KCPListener) Addr() net.Addr {
+	return nil
+}
