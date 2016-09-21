@@ -25,6 +25,7 @@ import (
 type TransProtocol uint32
 
 const (
+	PROTO_TCP = TransProtocol(0)
 	PROTO_KCP = TransProtocol(1)
 	PROTO_OBFS4 = TransProtocol(2)
 )
@@ -35,10 +36,17 @@ type Listener struct {
 	//block cipher.Block
 }
 
-func NewListener(proto TransProtocol, addr net.Addr) (net.Listener, error) {
+func NewListener(proto TransProtocol, listenAddr string) (l net.Listener, err error) {
 	switch proto {
 	case PROTO_KCP:
 		return &Listener{proto:proto, listener:&KCPListener{}}, nil
+	case PROTO_TCP:
+		addr, err := net.ResolveTCPAddr("tcp4", listenAddr)
+		if err != nil {
+			return nil, err
+		}
+		l, err := net.ListenTCP("tcp4", addr)
+		return l, nil
 	default:
 		return nil, errors.New("UNKOWN PROTOCOL!")
 	}

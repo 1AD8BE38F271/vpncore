@@ -23,29 +23,11 @@ import (
 	"golang.org/x/net/proxy"
 )
 
-type ConnectionDialer struct {
-	Url    *url.URL
-	dialer proxy.Dialer
-}
 
-func (p *ConnectionDialer) Dial(network, addr string) (net.Conn, error) {
-	return p.dialer.Dial(network, addr)
-}
+func Dial(proto TransProtocol, addr string) (net.Conn, error) {
 
-func NewDialer(protoUrl string) (d *ConnectionDialer, err error) {
-	u, err := url.Parse(protoUrl)
-	if err != nil {
-		return nil, err
-	}
-
-	dailer, err := proxy.FromURL(u, proxy.Direct)
-	if err != nil {
-		return nil, err
-	}
-
-	d = &ConnectionDialer{
-		Url:    u,
-		dialer: dailer,
+	if proto == PROTO_TCP {
+		return net.Dial("tcp", addr)
 	}
 
 	return
