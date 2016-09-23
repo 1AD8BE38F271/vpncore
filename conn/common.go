@@ -16,18 +16,26 @@
  */
 
 package conn
+type TransProtocol uint32
 
-import (
-	"net"
-	"errors"
+func (self *TransProtocol) UnmarshalTOML(data []byte) (err error) {
+	name := string(data)
+	name = strings.TrimSpace(name)
+	name = strings.Trim(name, "\"")
+
+	switch name {
+	case "tcp": *self = 0
+	case "kcp": *self = 1
+	case "obfs4": *self = 2
+	default:
+		return fmt.Errorf("invalid protocal:%s", name)
+	}
+	return
+}
+
+const (
+	PROTO_TCP = TransProtocol(0)
+	PROTO_KCP = TransProtocol(1)
+	PROTO_OBFS4 = TransProtocol(2)
 )
 
-
-func Dial(proto TransProtocol, addr string) (net.Conn, error) {
-
-	if proto == PROTO_TCP {
-		return net.Dial("tcp", addr)
-	}
-
-	return nil, errors.New("Proto not supported!")
-}

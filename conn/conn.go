@@ -20,56 +20,65 @@ package conn
 import (
 	"net"
 	"errors"
+	"strings"
+	"fmt"
+	"github.com/FTwOoO/go-enc"
 )
 
-type TransProtocol uint32
-
-const (
-	PROTO_TCP = TransProtocol(0)
-	PROTO_KCP = TransProtocol(1)
-	PROTO_OBFS4 = TransProtocol(2)
-)
-
-type Listener struct {
-	listener net.Listener
-	proto TransProtocol
-	//block cipher.Block
+type Connection struct {
+	c     net.Conn
+	block enc.BlockCrypt
 }
 
-func NewListener(proto TransProtocol, listenAddr string) (l net.Listener, err error) {
-	switch proto {
-	case PROTO_KCP:
-		return &Listener{proto:proto, listener:&KCPListener{}}, nil
-	case PROTO_TCP:
-		addr, err := net.ResolveTCPAddr("tcp4", listenAddr)
-		if err != nil {
-			return nil, err
-		}
-		l, err := net.ListenTCP("tcp4", addr)
-		return l, nil
-	default:
-		return nil, errors.New("UNKOWN PROTOCOL!")
+func NewConnection(conn net.Conn, config *enc.BlockConfig) (*Connection, error) {
+	connection := new(Connection)
+	connection.c = conn
+	block, err := enc.NewBlock(config)
+	if err != nil {
+		return nil, err
+	} else {
+		connection.block = block
+		return connection, nil
 	}
+
 }
 
-func (l *Listener) Accept() (conn net.Conn, err error) {
-	for {
-		conn, err = l.listener.Accept()
-		if err != nil {
-			return
-		}
-
+func (c *Connection) Read(b []byte) (n int, err error) {
+	buf := make([]byte, len(b) * 2)
+	n, err = c.c.Read(buf)
+	if err != nil {
+		return
 	}
-	return
+
+	c.block.Decrypt(b, buf)
+
 }
 
-// Close closes the listener.
-// Any blocked Accept operations will be unblocked and return errors.
-func (l *Listener) Close() error {
-	return l.listener.Close()
+func (c *Connection) Write(b []byte) (n int, err error) {
+	return c.c.Write(b)
+
 }
 
-// Addr returns the listener's network address.
-func (l *Listener) Addr() net.Addr {
-	return l.listener.Addr()
+func (c *Connection) Close() error {
+	return c.c.Close()
+}
+
+func (c *Connection) LocalAddr() net.Addr {
+	return c.c.LocalAddr()
+}
+
+func (c *Connection) RemoteAddr() net.Addr {
+	return c.c.RemoteAddr()
+}
+
+func (c *Connection)SetDeadline(t time.Time) error {
+	return c.c.SetDeadline(t)
+}
+
+func (c *Connection)SetReadDeadline(t time.Time) error {
+	return c.c.SetReadDeadline(t)
+}
+
+func (c *Connection)SetWriteDeadline(t time.Time) error {
+	return c.c.SetWriteDeadline(t)
 }
