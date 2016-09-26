@@ -24,62 +24,64 @@ import (
 )
 
 type Connection struct {
-	c     net.Conn
-	block enc.BlockCrypt
+	C net.Conn
+	B enc.BlockCrypt
 }
 
 func NewConnection(conn net.Conn, config *enc.BlockConfig) (*Connection, error) {
 	connection := new(Connection)
-	connection.c = conn
+	connection.C = conn
 	block, err := enc.NewBlock(config)
 	if err != nil {
 		return nil, err
 	} else {
-		connection.block = block
+		connection.B = block
 		return connection, nil
 	}
 
 }
 
 func (c *Connection) Read(b []byte) (n int, err error) {
-	n, err = c.c.Read(b)
+	n, err = c.C.Read(b)
 	if err != nil {
 		return
 	}
 
-	c.block.Decrypt(b[:n], b[:n])
+	c.B.Decrypt(b[:n], b[:n])
 	return
 
 }
 
 func (c *Connection) Write(b []byte) (n int, err error) {
-	n, err = c.c.Write(b)
+	n, err = c.C.Write(b)
 	if err != nil {
-		c.block.Encrypt(b[:n], b[:n])
+		return
 	}
+
+	c.B.Encrypt(b[:n], b[:n])
 	return
 }
 
 func (c *Connection) Close() error {
-	return c.c.Close()
+	return c.C.Close()
 }
 
 func (c *Connection) LocalAddr() net.Addr {
-	return c.c.LocalAddr()
+	return c.C.LocalAddr()
 }
 
 func (c *Connection) RemoteAddr() net.Addr {
-	return c.c.RemoteAddr()
+	return c.C.RemoteAddr()
 }
 
 func (c *Connection)SetDeadline(t time.Time) error {
-	return c.c.SetDeadline(t)
+	return c.C.SetDeadline(t)
 }
 
 func (c *Connection)SetReadDeadline(t time.Time) error {
-	return c.c.SetReadDeadline(t)
+	return c.C.SetReadDeadline(t)
 }
 
 func (c *Connection)SetWriteDeadline(t time.Time) error {
-	return c.c.SetWriteDeadline(t)
+	return c.C.SetWriteDeadline(t)
 }

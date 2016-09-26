@@ -43,6 +43,7 @@ func TestNewListener(t *testing.T) {
 
 	testData := make([]byte, testDataLen)
 	io.ReadFull(crand.Reader, testData)
+	fmt.Printf("Test data is %v...\n", testData[:0x10])
 
 	var wg sync.WaitGroup
 	wg.Add(2)
@@ -61,10 +62,8 @@ func TestNewListener(t *testing.T) {
 
 		for {
 			if areadyRead == testDataLen {
-				fmt.Println("compare bytes...")
-
 				if !bytes.Equal(expectedData, testData) {
-					t.Fail()
+					t.Fatal("Bytes does not equal!")
 				}
 				return
 			}
@@ -74,7 +73,7 @@ func TestNewListener(t *testing.T) {
 				t.Fatal(err)
 			}
 
-			fmt.Printf("Read %d bytes: %v...\n", n, testData[areadyRead:areadyRead + 5])
+			fmt.Printf("Read %d bytes: %v...\n", n, expectedData[areadyRead:areadyRead + 0x10])
 			areadyRead += n
 		}
 
@@ -96,11 +95,11 @@ func TestNewListener(t *testing.T) {
 			if areadyWrite == testDataLen {
 				break
 			}
-			n, err := connection.Write(testData[areadyWrite:testDataLen])
+			n, err := connection.Write(testData[areadyWrite:])
 			if err != nil {
 				t.Fatal(err)
 			}
-			fmt.Printf("Write %d bytes: %v...\n", n, testData[areadyWrite:areadyWrite + 5])
+			fmt.Printf("Write %d bytes: %v...\n", n, testData[areadyWrite:areadyWrite + 0x10])
 			areadyWrite += n
 		}
 	}(testData, testDataLen)

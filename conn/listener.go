@@ -39,7 +39,10 @@ func NewListener(proto TransProtocol, listenAddr string, blockConfig *enc.BlockC
 			return nil, err
 		}
 		l, err := net.ListenTCP("tcp4", addr)
-		return l, err
+		if err != nil {
+			return nil, err
+		}
+		return &Listener{proto:proto, listener:l, blockConfig:blockConfig}, nil
 	default:
 		return nil, errors.New("UNKOWN PROTOCOL!")
 	}
