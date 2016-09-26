@@ -16,6 +16,11 @@
  */
 
 package conn
+import (
+	"strings"
+	"fmt"
+)
+
 type TransProtocol uint32
 
 func (self *TransProtocol) UnmarshalTOML(data []byte) (err error) {
@@ -24,9 +29,9 @@ func (self *TransProtocol) UnmarshalTOML(data []byte) (err error) {
 	name = strings.Trim(name, "\"")
 
 	switch name {
-	case "tcp": *self = 0
-	case "kcp": *self = 1
-	case "obfs4": *self = 2
+	case "tcp": *self = PROTO_TCP
+	case "kcp": *self = PROTO_KCP
+	case "obfs4": *self = PROTO_OBFS4
 	default:
 		return fmt.Errorf("invalid protocal:%s", name)
 	}

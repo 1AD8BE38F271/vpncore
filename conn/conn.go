@@ -19,9 +19,7 @@ package conn
 
 import (
 	"net"
-	"errors"
-	"strings"
-	"fmt"
+	"time"
 	"github.com/FTwOoO/go-enc"
 )
 
@@ -44,19 +42,22 @@ func NewConnection(conn net.Conn, config *enc.BlockConfig) (*Connection, error) 
 }
 
 func (c *Connection) Read(b []byte) (n int, err error) {
-	buf := make([]byte, len(b) * 2)
-	n, err = c.c.Read(buf)
+	n, err = c.c.Read(b)
 	if err != nil {
 		return
 	}
 
-	c.block.Decrypt(b, buf)
+	c.block.Decrypt(b[:n], b[:n])
+	return
 
 }
 
 func (c *Connection) Write(b []byte) (n int, err error) {
-	return c.c.Write(b)
-
+	n, err = c.c.Write(b)
+	if err != nil {
+		c.block.Encrypt(b[:n], b[:n])
+	}
+	return
 }
 
 func (c *Connection) Close() error {

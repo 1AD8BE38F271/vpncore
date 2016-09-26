@@ -20,13 +20,20 @@ package conn
 import (
 	"net"
 	"errors"
+	"github.com/FTwOoO/go-enc"
 )
 
 
-func Dial(proto TransProtocol, addr string) (net.Conn, error) {
+func Dial(proto TransProtocol, addr string, blockConfig *enc.BlockConfig) (net.Conn, error) {
 
 	if proto == PROTO_TCP {
-		return net.Dial("tcp", addr)
+
+		conn, err := net.Dial("tcp", addr)
+		if err != nil {
+			return nil, err
+		}
+
+		return NewConnection(conn, blockConfig)
 	}
 
 	return nil, errors.New("Proto not supported!")

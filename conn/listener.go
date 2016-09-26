@@ -17,14 +17,19 @@
 
 package conn
 
-type Listener struct {
-	listener net.Listener
-	proto    TransProtocol
-	blockConfig *enc.BlockConfg
+import (
+	"net"
+	"github.com/FTwOoO/go-enc"
+	"errors"
+)
 
+type Listener struct {
+	listener    net.Listener
+	proto       TransProtocol
+	blockConfig *enc.BlockConfig
 }
 
-func NewListener(proto TransProtocol, listenAddr string, blockConfig enc.BlockConfg) (l net.Listener, err error) {
+func NewListener(proto TransProtocol, listenAddr string, blockConfig *enc.BlockConfig) (net.Listener, error) {
 	switch proto {
 	case PROTO_KCP:
 		return &Listener{proto:proto, listener:&KCPListener{}, blockConfig:blockConfig}, nil
@@ -34,22 +39,19 @@ func NewListener(proto TransProtocol, listenAddr string, blockConfig enc.BlockCo
 			return nil, err
 		}
 		l, err := net.ListenTCP("tcp4", addr)
-		return l, nil
+		return l, err
 	default:
 		return nil, errors.New("UNKOWN PROTOCOL!")
 	}
 }
 
 func (l *Listener) Accept() (net.Conn, error) {
-	for {
-		conn, err := l.listener.Accept()
-		if err != nil {
-			return nil, err
-		} else {
-			return NewConnection(conn, l.blockConfig)
-		}
+	conn, err := l.listener.Accept()
+	if err != nil {
+		return nil, err
+	} else {
+		return NewConnection(conn, l.blockConfig)
 	}
-	return
 }
 
 // Close closes the listener.
