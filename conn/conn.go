@@ -42,23 +42,37 @@ func NewConnection(conn net.Conn, config *enc.BlockConfig) (*Connection, error) 
 }
 
 func (c *Connection) Read(b []byte) (n int, err error) {
-	n, err = c.C.Read(b)
+
+	buf := make([]byte, len(b))
+
+	n, err = c.C.Read(buf)
 	if err != nil {
 		return
 	}
 
-	c.B.Decrypt(b[:n], b[:n])
+	c.B.Decrypt(b[:n], buf[:n])
 	return
 
 }
 
 func (c *Connection) Write(b []byte) (n int, err error) {
-	n, err = c.C.Write(b)
-	if err != nil {
-		return
+	buf := make([]byte, len(b))
+	c.B.Encrypt(buf, b)
+
+	total := len(b)
+	now := 0
+
+	for {
+		n, err = c.C.Write(buf[now:])
+		if err != nil {
+			return
+		}
+		now += n
+		if now == total {
+			break
+		}
 	}
 
-	c.B.Encrypt(b[:n], b[:n])
 	return
 }
 

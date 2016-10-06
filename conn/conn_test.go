@@ -25,15 +25,30 @@ import (
 	"io"
 	"bytes"
 	crand "crypto/rand"
+	mrand "math/rand"
 	"sync"
 )
 
 func TestNewListener(t *testing.T) {
 	proto := PROTO_TCP
-	cipher := enc.SALSA20
-	port := 20001
 	password := "123456"
-	testDataLen := 0x100000
+	port := mrand.Intn(100) + 20000
+	testDatalens := []int{0x10, 0x100, 0x1000, 0x10000, 0x10000}
+	testCiphers := []enc.Cipher{enc.AES128CFB, enc.AES256CFB, enc.SALSA20, enc.NONE}
+
+	for _, testDatalen := range testDatalens {
+		for _, cipher := range testCiphers {
+			fmt.Printf("Test PROTOCOL[%s] with ENCRYPTION[%s] PASS[%s] DATALEN[%d]\n", proto, cipher, password, testDatalen)
+			testOneConnection(t, proto, cipher, port, password, testDatalen)
+
+		}
+	}
+
+
+
+}
+
+func  testOneConnection (t *testing.T, proto TransProtocol, cipher enc.Cipher, port int, password string, testDatalen int) {
 
 	blockConfig := &enc.BlockConfig{Cipher:cipher, Password:password}
 	l, err := NewListener(proto, fmt.Sprintf("0.0.0.0:%d", port), blockConfig)
@@ -41,17 +56,17 @@ func TestNewListener(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	testData := make([]byte, testDataLen)
+	testData := make([]byte, testDatalen)
 	io.ReadFull(crand.Reader, testData)
 	fmt.Printf("Test data is %v...\n", testData[:0x10])
 
 	var wg sync.WaitGroup
 	wg.Add(2)
 
-	go func(testData []byte, testDataLen int) {
+	go func() {
 		defer wg.Done()
 
-		expectedData := make([]byte, testDataLen)
+		expectedData := make([]byte, testDatalen)
 
 		connection, err := l.Accept()
 		if err != nil {
@@ -59,9 +74,8 @@ func TestNewListener(t *testing.T) {
 		}
 
 		areadyRead := 0
-
 		for {
-			if areadyRead == testDataLen {
+			if areadyRead == testDatalen {
 				if !bytes.Equal(expectedData, testData) {
 					t.Fatal("Bytes does not equal!")
 				}
@@ -77,11 +91,11 @@ func TestNewListener(t *testing.T) {
 			areadyRead += n
 		}
 
-	}(testData, testDataLen)
+	}()
 
 	<-time.After(3 * time.Second)
 
-	go func(testData []byte, testDataLen int) {
+	go func() {
 		defer wg.Done()
 
 		connection, err := Dial(proto, fmt.Sprintf("127.0.0.1:%d", port), blockConfig)
@@ -90,9 +104,8 @@ func TestNewListener(t *testing.T) {
 		}
 
 		areadyWrite := 0
-
 		for {
-			if areadyWrite == testDataLen {
+			if areadyWrite == testDatalen {
 				break
 			}
 			n, err := connection.Write(testData[areadyWrite:])
@@ -102,8 +115,8 @@ func TestNewListener(t *testing.T) {
 			fmt.Printf("Write %d bytes: %v...\n", n, testData[areadyWrite:areadyWrite + 0x10])
 			areadyWrite += n
 		}
-	}(testData, testDataLen)
+	}()
 
 	wg.Wait()
-
+	l.Close()
 }
