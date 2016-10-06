@@ -24,8 +24,6 @@ import (
 	"fmt"
 	"encoding/binary"
 	"syscall"
-	"github.com/FTwOoO/vpncore/routes"
-	"github.com/FTwOoO/vpncore/dns"
 	"github.com/FTwOoO/vpncore/tcpip"
 )
 
@@ -100,16 +98,9 @@ func newTAP(ifName string) (ifce *Interface, err error) {
 		return nil, err
 	}
 
-	router, err := routes.NewRoutesManager()
-	if err != nil {
-		return nil, err
-	}
-
 	ifce = &Interface{isTAP: true,
 		ReadWriteCloser: file,
 		name: ifName,
-		routesManager:router,
-		dnsManager:new(dns.DNSManager),
 	}
 	return
 }
@@ -124,17 +115,10 @@ func newTUN(ifName string) (ifce *Interface, err error) {
 		return nil, err
 	}
 
-	router, err := routes.NewRoutesManager()
-	if err != nil {
-		return nil, err
-	}
-
 	ifce = &Interface{
 		isTAP: false,
 		ReadWriteCloser: &UTunFile{file:os.NewFile(fd, createdIfName)},
 		name: createdIfName,
-		routesManager:router,
-		dnsManager:new(dns.DNSManager),
 	}
 	return
 }

@@ -19,8 +19,6 @@ package tuntap
 import (
 	"io"
 	"net"
-	"github.com/FTwOoO/vpncore/dns"
-	"github.com/FTwOoO/vpncore/routes"
 )
 
 const (
@@ -36,9 +34,6 @@ type Interface struct {
 	isTAP         bool
 	io.ReadWriteCloser
 	name          string
-
-	routesManager *routes.RoutesManager
-	dnsManager    *dns.DNSManager
 }
 
 // Create a new TAP interface whose name is ifName.
@@ -84,43 +79,5 @@ func (ifce *Interface) Net() net.IPNet {
 // Returns the interface name of ifce, e.g. tun0, tap1, etc..
 func (ifce *Interface) Name() string {
 	return ifce.name
-}
-
-func (ifce *Interface) DefaultNic() string {
-	return ifce.routesManager.DefaultNic
-}
-
-func (ifce *Interface) DefaultGateway() net.IP {
-	return ifce.routesManager.DefaultGateway
-}
-
-func (ifce *Interface) Router() *routes.RoutesManager {
-	return ifce.routesManager
-}
-
-
-func (ifce *Interface) Destroy() {
-	ifce.routesManager.DeleteAllRoutes()
-	ifce.routesManager.RestoreGateWay()
-	ifce.dnsManager.RestoreDNS()
-}
-
-func (ifce *Interface) ClientRedirectGateway() (err error) {
-	//For Client
-	return ifce.routesManager.SetNewGateway(ifce.Name(), ifce.IP())
-}
-
-func (ifce *Interface) ClientSetupNewDNS(new_dns []net.IP) (err error) {
-	//For Client
-	err = ifce.dnsManager.SetupNewDNS(new_dns)
-	if err != nil {
-		return err
-	}
-
-	for _, dns_ip := range new_dns {
-		ifce.routesManager.AddRouteToHost(ifce.Name(), dns_ip, ifce.IP())
-	}
-
-	return nil
 }
 

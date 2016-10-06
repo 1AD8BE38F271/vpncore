@@ -76,6 +76,11 @@ func (self *RoutesManager)AddRouteToHost(iface string, dest net.IP, nextHop net.
 	return
 }
 
+func (self *RoutesManager) Destroy() {
+	self.DeleteAllRoutes()
+	self.RestoreGateWay()
+}
+
 func (self *RoutesManager) SetNewGateway(iface string, gw net.IP) (err error) {
 	self.mu.Lock()
 	defer self.mu.Unlock()

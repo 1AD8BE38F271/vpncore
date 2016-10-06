@@ -24,6 +24,8 @@ import (
 	"encoding/hex"
 	"sync"
 	"github.com/FTwOoO/vpncore/tcpip"
+	"github.com/FTwOoO/vpncore/routes"
+
 	"github.com/FTwOoO/vpncore/cmd"
 )
 
@@ -74,7 +76,13 @@ func testInterface(ifce *Interface, ip net.IP, subnet net.IPNet) {
 		panic(err)
 	}
 
-	err = ifce.ClientRedirectGateway()
+	router, err := routes.NewRoutesManager()
+	if err != nil {
+		panic(err)
+	}
+	defer router.Destroy()
+
+	err = router.SetNewGateway(ifce.Name(), ifce.IP())
 	if err != nil {
 		panic(err)
 	}
@@ -140,16 +148,14 @@ func TestAll(t *testing.T) {
 	subnet := net.IPNet{IP:[]byte{192, 168, 99, 0}, Mask:net.IPv4Mask(255, 255, 255, 0)}
 	ip := net.IP{192, 168, 99, 1}
 
-	ifce, err := NewTUN("tun1")
+	ifce, err := NewTUN("tun2")
 	if err != nil {
 		t.Fatal(err)
 	}
 
 	fmt.Printf("create %s\n", ifce.Name())
 	testInterface(ifce, ip, subnet)
-	new_dns := []net.IP{net.IP{8, 8, 8, 2}, net.IP{8, 8, 8, 8}}
-	ifce.ClientSetupNewDNS(new_dns)
-	ifce.Destroy()
+	ifce.Close()
 
 	ifce2, err := NewTAP("tap1")
 	if err != nil {
@@ -157,6 +163,6 @@ func TestAll(t *testing.T) {
 	}
 	fmt.Printf("create %s\n", ifce2.Name())
 	testInterface(ifce2, ip, subnet)
-	ifce2.Destroy()
+	ifce2.Close()
 
 }

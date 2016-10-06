@@ -22,6 +22,8 @@ import (
 	"fmt"
 	"errors"
 	"github.com/FTwOoO/vpncore/cmd"
+	"github.com/FTwOoO/vpncore/routes"
+
 )
 
 func maskToString(m net.IPMask) string {
@@ -82,14 +84,18 @@ func (ifce *Interface) changeMTU(mtu int) (err error) {
 	return nil
 }
 
-func (ifce *Interface) setupRoutes() (err error) {
+func (ifce *Interface) setupRoutes() (error) {
 
 	if ifce.IP() == nil {
 		return errors.New("Setup interface IP first!")
 	}
+	router, err := routes.NewRoutesManager()
+	if err != nil {
+		return err
+	}
 
-	err = ifce.routesManager.AddRouteToNet(ifce.Name(), ifce.subnet, ifce.IP())
-	return
+	err = router.AddRouteToNet(ifce.Name(), ifce.subnet, ifce.IP())
+	return err
 }
 
 
