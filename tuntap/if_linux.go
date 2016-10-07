@@ -131,7 +131,7 @@ func (ifce *Interface) setupRoutes() (err error) {
 		return errors.New("Setup interface IP first!")
 	}
 
-	router, _ = routes.NewRoutesManager()
+	router, _ := routes.NewRoutesManager()
 
 	err = router.AddRouteToNet(ifce.Name(), ifce.subnet, ifce.IP())
 	return
