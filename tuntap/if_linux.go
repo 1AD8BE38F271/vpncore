@@ -86,7 +86,7 @@ func (ifce *Interface) ServerSetupNatRules() (err error) {
 
 	subnet := ifce.Net()
 
-	router, err = routes.NewRoutesManager()
+	router, _ := routes.NewRoutesManager()
 
 	cmd1 := fmt.Sprintf("iptables -t nat -A POSTROUTING -o %s -s %s -j MASQUERADE", router.DefaultNic, subnet.String())
 	cmd2 := fmt.Sprintf("iptables -A FORWARD -d %s -i %s -o %s -j ACCEPT", subnet.String(),  router.DefaultNic, ifce.Name())
