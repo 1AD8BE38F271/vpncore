@@ -21,6 +21,8 @@ import (
 	"net"
 	"fmt"
 	"errors"
+	"github.com/FTwOoO/vpncore/cmd"
+	"github.com/FTwOoO/vpncore/routes"
 )
 
 func setUpHWAddr(ifce *Interface) (err error) {
@@ -84,9 +86,11 @@ func (ifce *Interface) ServerSetupNatRules() (err error) {
 
 	subnet := ifce.Net()
 
-	cmd1 := fmt.Sprintf("iptables -t nat -A POSTROUTING -o %s -s %s -j MASQUERADE", ifce.routesManager.default_nic, subnet.String())
-	cmd2 := fmt.Sprintf("iptables -A FORWARD -d %s -i %s -o %s -j ACCEPT", subnet.String(), ifce.routesManager.default_nic, ifce.Name())
-	cmd3 := fmt.Sprintf("iptables -A FORWARD -s %s -i %s -o %s -j ACCEPT", subnet.String(), ifce.Name(), ifce.routesManager.default_nic)
+	router, err = routes.NewRoutesManager()
+
+	cmd1 := fmt.Sprintf("iptables -t nat -A POSTROUTING -o %s -s %s -j MASQUERADE", router.DefaultNic, subnet.String())
+	cmd2 := fmt.Sprintf("iptables -A FORWARD -d %s -i %s -o %s -j ACCEPT", subnet.String(),  router.DefaultNic, ifce.Name())
+	cmd3 := fmt.Sprintf("iptables -A FORWARD -s %s -i %s -o %s -j ACCEPT", subnet.String(), ifce.Name(),  router.DefaultNic)
 	cmd4 := "sysctl net.ipv4.ip_forward=1"
 
 	_, err = cmd.RunCommand(cmd1)

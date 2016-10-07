@@ -29,13 +29,12 @@ import (
 	"os"
 	"strconv"
 	"github.com/FTwOoO/vpncore/cmd"
-
 )
 
 func addRouteToHost(iface string, dest net.IP, nextHop net.IP) (err error) {
 
 	c := fmt.Sprintf("ip -4 r a %s via %s dev %s", dest.String(), nextHop.String(), iface)
-	_, err = cmd.Runcommand(c)
+	_, err = cmd.RunCommand(c)
 
 	if err != nil {
 		return
@@ -48,7 +47,7 @@ func addRouteToHost(iface string, dest net.IP, nextHop net.IP) (err error) {
 func addRouteToNet(iface string, subnet net.IPNet, nextHop net.IP) (err error) {
 
 	c := fmt.Sprintf("ip -4 route add %s via %s dev %s", subnet.String(), nextHop.String(), iface)
-	_, err = cmd.Runcommand(c)
+	_, err = cmd.RunCommand(c)
 
 	if err != nil {
 	}
@@ -57,7 +56,7 @@ func addRouteToNet(iface string, subnet net.IPNet, nextHop net.IP) (err error) {
 
 func delNetRoute(dest net.IPNet) (err error) {
 	c := fmt.Sprintf("ip -4 route del %s", dest.String())
-	_, err = cmd.Runcommand(c)
+	_, err = cmd.RunCommand(c)
 
 	if err != nil {
 		return
@@ -67,7 +66,7 @@ func delNetRoute(dest net.IPNet) (err error) {
 
 func delHostRoute(dest net.IP) (err error) {
 	c := fmt.Sprintf("ip -4 route del %s", dest.String())
-	_, err = cmd.Runcommand(c)
+	_, err = cmd.RunCommand(c)
 
 	if err != nil {
 		return
@@ -82,7 +81,8 @@ func redirectGateway(iface string, gw net.IP) (err error) {
 
 	for _, subnet := range subnets {
 		c := fmt.Sprintf("ip -4 route add %s via %s dev %s", subnet, gw.String(), iface)
-		_, err = cmd.Runcommand(c)
+		_, err = cmd.RunCommand(c)
+
 		if err != nil {
 			return err
 		}
