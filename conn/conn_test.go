@@ -19,7 +19,7 @@ package conn
 
 import (
 	"testing"
-	"github.com/FTwOoO/go-enc"
+	"github.com/FTwOoO/vpncore/enc"
 	"fmt"
 	"time"
 	"io"

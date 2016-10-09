@@ -20,8 +20,10 @@ package conn
 import (
 	"net"
 	"time"
-	"github.com/FTwOoO/go-enc"
+	"github.com/FTwOoO/vpncore/enc"
+
 )
+
 
 type Connection struct {
 	C net.Conn

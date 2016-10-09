@@ -20,7 +20,7 @@ package conn
 import (
 	"net"
 	"errors"
-	"github.com/FTwOoO/go-enc"
+	"github.com/FTwOoO/vpncore/enc"
 )
 
 
