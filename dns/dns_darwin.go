@@ -31,7 +31,7 @@ func (self *DNSManager) SetupNewDNS(new_dns []net.IP) (err error) {
 
 	old_dns, err := self.GetCurrentDNS()
 	if err != nil {
-		return
+		old_dns = nil
 	}
 
 	l := (DNSList)(new_dns)
