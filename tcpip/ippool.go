@@ -25,11 +25,11 @@ import (
 )
 
 type IP4Pool struct {
-	subnet *net.IPNet
-	ipMin  uint32
-	ipMax  uint32
+	Subnet   *net.IPNet
+	ipMin    uint32
+	ipMax    uint32
 
-	pool   []bool
+	pool     []bool
 	poolLock sync.RWMutex
 }
 
@@ -37,7 +37,7 @@ var poolFull = errors.New("IP Pool Full")
 
 func NewIP4Pool(subnet *net.IPNet) (*IP4Pool, error) {
 	p := new(IP4Pool)
-	p.subnet = subnet
+	p.Subnet = subnet
 
 	ip := subnet.IP.To4()
 	if ip == nil {
