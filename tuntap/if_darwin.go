@@ -23,7 +23,6 @@ import (
 	"errors"
 	"github.com/FTwOoO/vpncore/cmd"
 	"github.com/FTwOoO/vpncore/routes"
-
 )
 
 func maskToString(m net.IPMask) string {
@@ -34,19 +33,19 @@ func maskToString(m net.IPMask) string {
 	return fmt.Sprintf("%d.%d.%d.%d", m[0], m[1], m[2], m[3])
 }
 
-func (ifce *Interface) SetupNetwork(ip net.IP, subnet net.IPNet, mtu int) (err error) {
+func (ifce *Interface) SetupNetwork(ip net.IP, peer_ip net.IP, subnet net.IPNet, mtu int) (err error) {
 
 	var c string
-	var peer_ip net.IP
 
 	err = ifce.changeMTU(mtu)
 	if err != nil {
 		return err
 	}
 
-
 	if ifce.IsTUN() {
-		peer_ip = generatePeerIP(ip)
+		if peer_ip == nil {
+			peer_ip = generatePeerIP(ip)
+		}
 		c = fmt.Sprintf("ifconfig %s inet %s %s netmask %s",
 			ifce.Name(), ip.String(), peer_ip.String(), maskToString(subnet.Mask))
 	} else {

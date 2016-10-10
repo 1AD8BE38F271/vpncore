@@ -39,10 +39,9 @@ func setUpHWAddr(ifce *Interface) (err error) {
 	return
 }
 
-func (ifce *Interface) SetupNetwork(ip net.IP, subnet net.IPNet, mtu int) (err error) {
+func (ifce *Interface) SetupNetwork(ip net.IP, peer_ip net.IP, subnet net.IPNet, mtu int) (err error) {
 
 	var c string
-	var peer_ip net.IP
 
 	err = ifce.changeMTU(mtu)
 	if err != nil {
@@ -50,7 +49,9 @@ func (ifce *Interface) SetupNetwork(ip net.IP, subnet net.IPNet, mtu int) (err e
 	}
 
 	if ifce.IsTUN() {
-		peer_ip = generatePeerIP(ip)
+		if peer_ip == nil {
+			peer_ip = generatePeerIP(ip)
+		}
 		c = fmt.Sprintf("ip addr add dev %s %s peer %s", ifce.Name(), ip.String(), peer_ip.String())
 	} else {
 		c = fmt.Sprintf("ip addr add dev %s add %s", ifce.Name(), ip.String())
@@ -89,8 +90,8 @@ func (ifce *Interface) ServerSetupNatRules() (err error) {
 	router, _ := routes.NewRoutesManager()
 
 	cmd1 := fmt.Sprintf("iptables -t nat -A POSTROUTING -o %s -s %s -j MASQUERADE", router.DefaultNic, subnet.String())
-	cmd2 := fmt.Sprintf("iptables -A FORWARD -d %s -i %s -o %s -j ACCEPT", subnet.String(),  router.DefaultNic, ifce.Name())
-	cmd3 := fmt.Sprintf("iptables -A FORWARD -s %s -i %s -o %s -j ACCEPT", subnet.String(), ifce.Name(),  router.DefaultNic)
+	cmd2 := fmt.Sprintf("iptables -A FORWARD -d %s -i %s -o %s -j ACCEPT", subnet.String(), router.DefaultNic, ifce.Name())
+	cmd3 := fmt.Sprintf("iptables -A FORWARD -s %s -i %s -o %s -j ACCEPT", subnet.String(), ifce.Name(), router.DefaultNic)
 	cmd4 := "sysctl net.ipv4.ip_forward=1"
 
 	_, err = cmd.RunCommand(cmd1)

@@ -71,7 +71,7 @@ func ip4BroadcastAddr(subnet net.IPNet) (brdIp net.IP) {
 
 func testInterface(ifce *Interface, ip net.IP, subnet net.IPNet) {
 
-	err := ifce.SetupNetwork(ip, subnet, 1400)
+	err := ifce.SetupNetwork(ip, nil, subnet, 1400)
 	if err != nil {
 		panic(err)
 	}
