@@ -15,7 +15,7 @@
  * Author: FTwOoO <booobooob@gmail.com>
  */
 
-package vpn
+package tcpip
 
 import (
 	"testing"
