@@ -60,22 +60,7 @@ func (c *Connection) Read(b []byte) (n int, err error) {
 func (c *Connection) Write(b []byte) (n int, err error) {
 	buf := make([]byte, len(b))
 	c.B.Encrypt(buf, b)
-
-	total := len(b)
-	now := 0
-
-	for {
-		n, err = c.C.Write(buf[now:])
-		if err != nil {
-			return
-		}
-		now += n
-		if now == total {
-			break
-		}
-	}
-
-	return
+	return c.C.Write(buf)
 }
 
 func (c *Connection) Close() error {
