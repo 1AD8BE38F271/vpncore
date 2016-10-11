@@ -86,7 +86,6 @@ func (ifce *Interface) SetupNetwork(ip net.IP, peer_ip net.IP, subnet net.IPNet,
 func (ifce *Interface) ServerSetupNatRules() (err error) {
 
 	subnet := ifce.Net()
-
 	router, _ := routes.NewRoutesManager()
 
 	cmd1 := fmt.Sprintf("iptables -t nat -A POSTROUTING -o %s -s %s -j MASQUERADE", router.DefaultNic, subnet.String())
