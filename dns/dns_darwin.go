@@ -46,11 +46,14 @@ func (self *DNSManager) SetupNewDNS(new_dns []net.IP) (err error) {
 
 func (self *DNSManager) RestoreDNS() (err error) {
 
+	var dns string
 	if self.old_dns == nil {
-		self.old_dns = "empty"
+		dns = "empty"
+	} else {
+		dns = self.old_dns.String()
 	}
 
-	_, err = cmd.RunCommand(fmt.Sprintf("networksetup -setdnsservers WI-Fi %s", self.old_dns.String()))
+	_, err = cmd.RunCommand(fmt.Sprintf("networksetup -setdnsservers WI-Fi %s", dns))
 	if err != nil {
 		return
 	}
