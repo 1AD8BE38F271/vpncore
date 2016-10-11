@@ -63,8 +63,6 @@ func NewIP4Pool(subnet *net.IPNet) (*IP4Pool, error) {
 	p.ipMin = ipMinValue
 	p.ipMax = ipMaxValue
 
-	fmt.Printf("ipMin is %x\nipMax is %x\n", p.ipMin, p.ipMax)
-
 	return p, nil
 
 }
@@ -76,7 +74,6 @@ func (p *IP4Pool) Next() (net.IP, error) {
 	var i uint32
 	for i = p.ipMin; i <= p.ipMax; i += 1 {
 		if p.pool[i-p.ipMin] == false {
-			fmt.Printf("current is %x\n", i)
 			p.pool[i-p.ipMin] = true
 			targetIp := net.IPv4(0, 0, 0, 0).To4()
 			binary.BigEndian.PutUint32(targetIp, i)
