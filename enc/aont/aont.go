@@ -32,7 +32,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 //     PKG = P1 || P2
 //      P1 = Salsa20(key=r, nonce=0x00, M || BLAKE2b(r || M) )
 //      P2 = BLAKE2b(P1) XOR r
-package enc
+package aont
 
 import (
 	"crypto/subtle"

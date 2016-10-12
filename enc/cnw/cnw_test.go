@@ -16,34 +16,37 @@ You should have received a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-package enc
+package cnw
 
 import (
 	"bytes"
 	"crypto/rand"
+	"encoding/binary"
 	"io"
 	"testing"
 	"testing/quick"
 )
 
 var (
-	testAontKey *[AontKeySize]byte = new([AontKeySize]byte)
+	testCnwKey *[32]byte = new([32]byte)
 )
 
 func init() {
-	io.ReadFull(rand.Reader, testAontKey[:])
+	io.ReadFull(rand.Reader, testCnwKey[:])
 }
 
-func TestAontSymmetric(t *testing.T) {
-	f := func(data []byte) bool {
-		encoded, err := AontEncode(testAontKey, data)
-		if err != nil {
+func TestChaffWindowSymmetric(t *testing.T) {
+	nonce := make([]byte, 8)
+	f := func(data []byte, pktNum uint64) bool {
+		if len(data) == 0 {
+			return true
+		}
+		binary.BigEndian.PutUint64(nonce, pktNum)
+		chaffed := Chaff(testCnwKey, nonce, data)
+		if len(chaffed) != len(data)*EnlargeFactor {
 			return false
 		}
-		if len(encoded) != len(data)+ AontKeySize + AontHashSize {
-			return false
-		}
-		decoded, err := AontDecode(encoded)
+		decoded, err := Winnow(testCnwKey, nonce, chaffed)
 		if err != nil {
 			return false
 		}
@@ -54,46 +57,32 @@ func TestAontSymmetric(t *testing.T) {
 	}
 }
 
-func TestAontSmallSize(t *testing.T) {
-	_, err := AontDecode([]byte("foobar"))
+func TestChaffWindowSmallSize(t *testing.T) {
+	_, err := Winnow(testCnwKey, []byte("foobar12"), []byte("foobar"))
 	if err == nil {
 		t.Fail()
 	}
 }
 
-func TestTampered(t *testing.T) {
-	f := func(data []byte, index int) bool {
-		if len(data) == 0 {
-			return true
-		}
-		encoded, _ := AontEncode(testAontKey, data)
-		encoded[len(data)%index] ^= byte('a')
-		_, err := AontDecode(encoded)
-		if err == nil {
-			return false
-		}
-		return true
-	}
-	if err := quick.Check(f, nil); err != nil {
-		t.Error(err)
-	}
-}
-
-func BenchmarkEncode(b *testing.B) {
-	data := make([]byte, 128)
+func BenchmarkChaff(b *testing.B) {
+	nonce := make([]byte, 8)
+	data := make([]byte, 16)
+	io.ReadFull(rand.Reader, nonce)
 	io.ReadFull(rand.Reader, data)
 	b.ResetTimer()
 	for i := 0; i < b.N; i++ {
-		AontEncode(testAontKey, data)
+		Chaff(testCnwKey, nonce, data)
 	}
 }
 
-func BenchmarkDecode(b *testing.B) {
-	data := make([]byte, 128)
+func BenchmarkWinnow(b *testing.B) {
+	nonce := make([]byte, 8)
+	data := make([]byte, 16)
+	io.ReadFull(rand.Reader, nonce)
 	io.ReadFull(rand.Reader, data)
-	encoded, _ := AontEncode(testAontKey, data)
+	chaffed := Chaff(testCnwKey, nonce, data)
 	b.ResetTimer()
 	for i := 0; i < b.N; i++ {
-		AontDecode(encoded)
+		Winnow(testCnwKey, nonce, chaffed)
 	}
 }

@@ -39,7 +39,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 //
 //     MACKey1, MACKey2, ... = XSalsa20(authKey, nonce, 0x00...)
 //     nonce = prefix || 0x00... || big endian byte number
-package enc
+package cnw
 
 import (
 	"crypto/subtle"

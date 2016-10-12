@@ -21,6 +21,8 @@ package enc
 import (
 	"io"
 	"crypto/rand"
+	"github.com/FTwOoO/vpncore/enc/cnw"
+	"github.com/FTwOoO/vpncore/enc/aont"
 )
 
 var (
@@ -28,7 +30,7 @@ var (
 )
 
 const (
-	EnclessEnlargeSize = AontHashSize + AontKeySize *EnlargeFactor
+	EnclessEnlargeSize = aont.AontHashSize + aont.AontKeySize *cnw.EnlargeFactor
 )
 
 // Zero each byte.
@@ -45,34 +47,34 @@ func SliceZero(data []byte) {
 // nonce is 64-bit nonce. Output data will be EnclessEnlargeSize larger.
 // It also consumes 64-bits of entropy.
 func EnclessEncode(authKey *[32]byte, nonce, in []byte) ([]byte, error) {
-	r := new([AontKeySize]byte)
+	r := new([aont.AontKeySize]byte)
 	var err error
 	if _, err = io.ReadFull(Rand, r[:]); err != nil {
 		return nil, err
 	}
-	aonted, err := AontEncode(r, in)
+	aonted, err := aont.AontEncode(r, in)
 	if err != nil {
 		return nil, err
 	}
 	out := append(
-		Chaff(authKey, nonce, aonted[:AontKeySize]),
-		aonted[AontKeySize:]...,
+		cnw.Chaff(authKey, nonce, aonted[:aont.AontKeySize]),
+		aonted[aont.AontKeySize:]...,
 	)
-	SliceZero(aonted[:AontKeySize])
+	SliceZero(aonted[:aont.AontKeySize])
 	return out, nil
 }
 
 // Decode EnclessEncode-ed data.
 func EnclessDecode(authKey *[32]byte, nonce, in []byte) ([]byte, error) {
 	var err error
-	winnowed, err := Winnow(
-		authKey, nonce, in[:AontKeySize *EnlargeFactor],
+	winnowed, err := cnw.Winnow(
+		authKey, nonce, in[:aont.AontKeySize *cnw.EnlargeFactor],
 	)
 	if err != nil {
 		return nil, err
 	}
-	out, err := AontDecode(append(
-		winnowed, in[AontKeySize *EnlargeFactor:]...,
+	out, err := aont.AontDecode(append(
+		winnowed, in[aont.AontKeySize *cnw.EnlargeFactor:]...,
 	))
 	SliceZero(winnowed)
 	if err != nil {
