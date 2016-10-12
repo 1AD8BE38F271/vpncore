@@ -39,6 +39,7 @@ import (
 	"errors"
 
 	"github.com/dchest/blake2b"
+	//"github.com/flynn/noise"
 	"golang.org/x/crypto/salsa20"
 )
 
@@ -64,9 +65,9 @@ func AontEncode(r *[RSize]byte, in []byte) ([]byte, error) {
 	copy(salsaKey[:], r[:])
 	salsa20.XORKeyStream(out, out, dummyNonce, salsaKey)
 	h.Reset()
-	h.Write(out[:len(in)+32])
+	h.Write(out[:len(in)+HSize])
 	for i, b := range h.Sum(nil)[:RSize] {
-		out[len(in)+32+i] = b ^ r[i]
+		out[len(in)+HSize+i] = b ^ r[i]
 	}
 	return out, nil
 }
