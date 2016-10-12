@@ -28,7 +28,7 @@ var (
 )
 
 const (
-	EnclessEnlargeSize = HSize + RSize*EnlargeFactor
+	EnclessEnlargeSize = AontHashSize + AontKeySize *EnlargeFactor
 )
 
 // Zero each byte.
@@ -45,7 +45,7 @@ func SliceZero(data []byte) {
 // nonce is 64-bit nonce. Output data will be EnclessEnlargeSize larger.
 // It also consumes 64-bits of entropy.
 func EnclessEncode(authKey *[32]byte, nonce, in []byte) ([]byte, error) {
-	r := new([RSize]byte)
+	r := new([AontKeySize]byte)
 	var err error
 	if _, err = io.ReadFull(Rand, r[:]); err != nil {
 		return nil, err
@@ -55,10 +55,10 @@ func EnclessEncode(authKey *[32]byte, nonce, in []byte) ([]byte, error) {
 		return nil, err
 	}
 	out := append(
-		Chaff(authKey, nonce, aonted[:RSize]),
-		aonted[RSize:]...,
+		Chaff(authKey, nonce, aonted[:AontKeySize]),
+		aonted[AontKeySize:]...,
 	)
-	SliceZero(aonted[:RSize])
+	SliceZero(aonted[:AontKeySize])
 	return out, nil
 }
 
@@ -66,13 +66,13 @@ func EnclessEncode(authKey *[32]byte, nonce, in []byte) ([]byte, error) {
 func EnclessDecode(authKey *[32]byte, nonce, in []byte) ([]byte, error) {
 	var err error
 	winnowed, err := Winnow(
-		authKey, nonce, in[:RSize*EnlargeFactor],
+		authKey, nonce, in[:AontKeySize *EnlargeFactor],
 	)
 	if err != nil {
 		return nil, err
 	}
 	out, err := AontDecode(append(
-		winnowed, in[RSize*EnlargeFactor:]...,
+		winnowed, in[AontKeySize *EnlargeFactor:]...,
 	))
 	SliceZero(winnowed)
 	if err != nil {
