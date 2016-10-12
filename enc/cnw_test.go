@@ -28,11 +28,11 @@ import (
 )
 
 var (
-	testKey *[32]byte = new([32]byte)
+	testCnwKey *[32]byte = new([32]byte)
 )
 
 func init() {
-	io.ReadFull(rand.Reader, testKey[:])
+	io.ReadFull(rand.Reader, testCnwKey[:])
 }
 
 func TestChaffWindowSymmetric(t *testing.T) {
@@ -42,11 +42,11 @@ func TestChaffWindowSymmetric(t *testing.T) {
 			return true
 		}
 		binary.BigEndian.PutUint64(nonce, pktNum)
-		chaffed := Chaff(testKey, nonce, data)
+		chaffed := Chaff(testCnwKey, nonce, data)
 		if len(chaffed) != len(data)*EnlargeFactor {
 			return false
 		}
-		decoded, err := Winnow(testKey, nonce, chaffed)
+		decoded, err := Winnow(testCnwKey, nonce, chaffed)
 		if err != nil {
 			return false
 		}
@@ -58,7 +58,7 @@ func TestChaffWindowSymmetric(t *testing.T) {
 }
 
 func TestChaffWindowSmallSize(t *testing.T) {
-	_, err := Winnow(testKey, []byte("foobar12"), []byte("foobar"))
+	_, err := Winnow(testCnwKey, []byte("foobar12"), []byte("foobar"))
 	if err == nil {
 		t.Fail()
 	}
@@ -71,7 +71,7 @@ func BenchmarkChaff(b *testing.B) {
 	io.ReadFull(rand.Reader, data)
 	b.ResetTimer()
 	for i := 0; i < b.N; i++ {
-		Chaff(testKey, nonce, data)
+		Chaff(testCnwKey, nonce, data)
 	}
 }
 
@@ -80,9 +80,9 @@ func BenchmarkWinnow(b *testing.B) {
 	data := make([]byte, 16)
 	io.ReadFull(rand.Reader, nonce)
 	io.ReadFull(rand.Reader, data)
-	chaffed := Chaff(testKey, nonce, data)
+	chaffed := Chaff(testCnwKey, nonce, data)
 	b.ResetTimer()
 	for i := 0; i < b.N; i++ {
-		Winnow(testKey, nonce, chaffed)
+		Winnow(testCnwKey, nonce, chaffed)
 	}
 }

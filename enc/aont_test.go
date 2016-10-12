@@ -27,16 +27,16 @@ import (
 )
 
 var (
-	testKey *[16]byte = new([16]byte)
+	testAontKey *[16]byte = new([16]byte)
 )
 
 func init() {
-	io.ReadFull(rand.Reader, testKey[:])
+	io.ReadFull(rand.Reader, testAontKey[:])
 }
 
 func TestAontSymmetric(t *testing.T) {
 	f := func(data []byte) bool {
-		encoded, err := AontEncode(testKey, data)
+		encoded, err := AontEncode(testAontKey, data)
 		if err != nil {
 			return false
 		}
@@ -66,7 +66,7 @@ func TestTampered(t *testing.T) {
 		if len(data) == 0 {
 			return true
 		}
-		encoded, _ := AontEncode(testKey, data)
+		encoded, _ := AontEncode(testAontKey, data)
 		encoded[len(data)%index] ^= byte('a')
 		_, err := AontDecode(encoded)
 		if err == nil {
@@ -84,14 +84,14 @@ func BenchmarkEncode(b *testing.B) {
 	io.ReadFull(rand.Reader, data)
 	b.ResetTimer()
 	for i := 0; i < b.N; i++ {
-		AontEncode(testKey, data)
+		AontEncode(testAontKey, data)
 	}
 }
 
 func BenchmarkDecode(b *testing.B) {
 	data := make([]byte, 128)
 	io.ReadFull(rand.Reader, data)
-	encoded, _ := AontEncode(testKey, data)
+	encoded, _ := AontEncode(testAontKey, data)
 	b.ResetTimer()
 	for i := 0; i < b.N; i++ {
 		AontDecode(encoded)
