@@ -30,22 +30,20 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 // package PKG:
 //
 //     PKG = P1 || P2
-//      P1 = Salsa20(key=r, nonce=0x00, M) || BLAKE2b(r || M)
+//      P1 = Salsa20(key=r, nonce=0x00, M || BLAKE2b(r || M) )
 //      P2 = BLAKE2b(P1) XOR r
 package enc
 
 import (
 	"crypto/subtle"
 	"errors"
-
-	"github.com/dchest/blake2b"
-	//"github.com/flynn/noise"
 	"golang.org/x/crypto/salsa20"
+	"github.com/flynn/noise"
 )
 
 const (
-	HSize = 32
-	RSize = 16
+	AontHashSize = 64
+	AontKeySize = 32
 )
 
 var (
@@ -54,20 +52,19 @@ var (
 
 // Encode the data, produce AONT package. Data size will be larger than
 // the original one for 48 bytes.
-func AontEncode(r *[RSize]byte, in []byte) ([]byte, error) {
-	out := make([]byte, len(in)+HSize+RSize)
+func AontEncode(key *[AontKeySize]byte, in []byte) ([]byte, error) {
+	out := make([]byte, len(in)+ AontHashSize + AontKeySize)
 	copy(out, in)
-	h := blake2b.New256()
-	h.Write(r[:])
+	h := noise.HashBLAKE2b.Hash()
+	h.Write(key[:])
 	h.Write(in)
 	copy(out[len(in):], h.Sum(nil))
-	salsaKey := new([32]byte)
-	copy(salsaKey[:], r[:])
-	salsa20.XORKeyStream(out, out, dummyNonce, salsaKey)
+
+	salsa20.XORKeyStream(out, out, dummyNonce, key)
 	h.Reset()
-	h.Write(out[:len(in)+HSize])
-	for i, b := range h.Sum(nil)[:RSize] {
-		out[len(in)+HSize+i] = b ^ r[i]
+	h.Write(out[:len(in)+ AontHashSize])
+	for i, b := range h.Sum(nil)[:AontKeySize] {
+		out[len(in)+ AontHashSize +i] = b ^ key[i]
 	}
 	return out, nil
 }
@@ -75,22 +72,22 @@ func AontEncode(r *[RSize]byte, in []byte) ([]byte, error) {
 // Decode the data from AONT package. Data size will be smaller than the
 // original one for 48 bytes.
 func AontDecode(in []byte) ([]byte, error) {
-	if len(in) < HSize+RSize {
+	if len(in) < AontHashSize + AontKeySize {
 		return nil, errors.New("Too small input buffer")
 	}
-	h := blake2b.New256()
-	h.Write(in[:len(in)-RSize])
-	salsaKey := new([32]byte)
-	for i, b := range h.Sum(nil)[:RSize] {
-		salsaKey[i] = b ^ in[len(in)-RSize+i]
+	h := noise.HashBLAKE2b.Hash()
+	h.Write(in[:len(in)- AontKeySize])
+	salsaKey := new([AontKeySize]byte)
+	for i, b := range h.Sum(nil)[:AontKeySize] {
+		salsaKey[i] = b ^ in[len(in)- AontKeySize +i]
 	}
 	h.Reset()
-	h.Write(salsaKey[:RSize])
-	out := make([]byte, len(in)-RSize)
-	salsa20.XORKeyStream(out, in[:len(in)-RSize], dummyNonce, salsaKey)
-	h.Write(out[:len(out)-HSize])
-	if subtle.ConstantTimeCompare(h.Sum(nil), out[len(out)-HSize:]) != 1 {
+	h.Write(salsaKey[:AontKeySize])
+	out := make([]byte, len(in)- AontKeySize)
+	salsa20.XORKeyStream(out, in[:len(in)- AontKeySize], dummyNonce, salsaKey)
+	h.Write(out[:len(out)- AontHashSize])
+	if subtle.ConstantTimeCompare(h.Sum(nil), out[len(out)- AontHashSize:]) != 1 {
 		return nil, errors.New("Invalid checksum")
 	}
-	return out[:len(out)-HSize], nil
+	return out[:len(out)- AontHashSize], nil
 }

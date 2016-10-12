@@ -27,7 +27,7 @@ import (
 )
 
 var (
-	testAontKey *[16]byte = new([16]byte)
+	testAontKey *[AontKeySize]byte = new([AontKeySize]byte)
 )
 
 func init() {
@@ -40,7 +40,7 @@ func TestAontSymmetric(t *testing.T) {
 		if err != nil {
 			return false
 		}
-		if len(encoded) != len(data)+16+32 {
+		if len(encoded) != len(data)+ AontKeySize + AontHashSize {
 			return false
 		}
 		decoded, err := AontDecode(encoded)
