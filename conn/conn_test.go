@@ -15,7 +15,7 @@
  * Author: FTwOoO <booobooob@gmail.com>
  */
 
-package conn
+package conn_test
 
 import (
 	"testing"
@@ -27,10 +27,13 @@ import (
 	crand "crypto/rand"
 	mrand "math/rand"
 	"sync"
+	"github.com/FTwOoO/vpncore/conn/crypt"
+	"github.com/FTwOoO/vpncore/conn/stream"
+	"github.com/FTwOoO/vpncore/conn"
 )
 
 func TestNewListener(t *testing.T) {
-	proto := PROTO_TCP
+	proto := conn.PROTO_TCP
 	password := "123456"
 	port := mrand.Intn(100) + 20000
 	testDatalens := []int{0x10, 0x100, 0x1000, 0x10000, 0x10000}
@@ -43,15 +46,17 @@ func TestNewListener(t *testing.T) {
 
 		}
 	}
-
-
-
 }
 
-func  testOneConnection (t *testing.T, proto TransProtocol, cipher enc.Cipher, port int, password string, testDatalen int) {
+func testOneConnection(t *testing.T, proto conn.TransProtocol, cipher enc.Cipher, port int, password string, testDatalen int) {
 
-	blockConfig := &enc.BlockConfig{Cipher:cipher, Password:password}
-	l, err := NewListener(proto, fmt.Sprintf("0.0.0.0:%d", port), blockConfig)
+	context1 := &stream.StreamLayerContext{
+		Protocol:proto,
+		ListenAddr:fmt.Sprintf("0.0.0.0:%d", port),
+		RemoveAddr:fmt.Sprintf("127.0.0.1:%d", port)}
+	context2 := &crypt.CryptLayerContext{BlockConfig:&enc.BlockConfig{Cipher:cipher, Password:password}}
+
+	l, err := conn.NewListener([]conn.ConnLayerContext{context1, context2})
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -98,7 +103,7 @@ func  testOneConnection (t *testing.T, proto TransProtocol, cipher enc.Cipher, p
 	go func() {
 		defer wg.Done()
 
-		connection, err := Dial(proto, fmt.Sprintf("127.0.0.1:%d", port), blockConfig)
+		connection, err := conn.Dial([]conn.ConnLayerContext{context1, context2})
 		if err != nil {
 			t.Fatal(err)
 		}

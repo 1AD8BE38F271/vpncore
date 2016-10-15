@@ -15,28 +15,41 @@
  * Author: FTwOoO <booobooob@gmail.com>
  */
 
-package conn
+package crypt
 
-import "net"
+import (
+	"net"
+	"github.com/FTwOoO/vpncore/enc"
+)
 
-type KCPListener struct {
-	*net.TCPListener
 
+type cryptConn struct {
+	net.Conn
+	B enc.BlockCrypt
 }
 
-
-// Accept waits for and returns the next connection to the listener.
-func (conn *KCPListener)Accept() (net.Conn, error) {
-	return nil, nil
+func NewCryptConn(conn net.Conn, block enc.BlockCrypt) (*cryptConn, error) {
+	connection := new(cryptConn)
+	connection.Conn = conn
+	connection.B = block
+	return connection, nil
 }
 
-// Close closes the listener.
-// Any blocked Accept operations will be unblocked and return errors.
-func (conn *KCPListener) Close() error {
-	return nil
+func (c *cryptConn) Read(b []byte) (n int, err error) {
+
+	buf := make([]byte, len(b))
+
+	n, err = c.Conn.Read(buf)
+	if err != nil {
+		return
+	}
+
+	c.B.Decrypt(b[:n], buf[:n])
+	return
 }
 
-// Addr returns the listener's network address.
-func (conn *KCPListener) Addr() net.Addr {
-	return nil
+func (c *cryptConn) Write(b []byte) (n int, err error) {
+	buf := make([]byte, len(b))
+	c.B.Encrypt(buf, b)
+	return c.Conn.Write(buf)
 }

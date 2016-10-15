@@ -15,31 +15,38 @@
  * Author: FTwOoO <booobooob@gmail.com>
  */
 
-package conn
+package crypt
 
 import (
 	"net"
+	"github.com/FTwOoO/vpncore/enc"
+	"github.com/FTwOoO/vpncore/conn"
 )
 
-func Dial(contexts []ConnLayerContext) (c net.Conn, err error) {
-	if len(contexts) < 1 {
-		return nil, ErrInvalidArgs
-	}
-
-	ctx := contexts[0]
-	c, err = ctx.Dial(nil)
-	if err != nil {
-		return
-	}
-
-	for _, ctx := range contexts[1:] {
-		c, err = ctx.Dial(c)
-		if err != nil {
-			return
-		}
-
-	}
-
-	return c, err
+type CryptLayerContext struct {
+	*enc.BlockConfig
 }
 
+func (this *CryptLayerContext) Dial(c net.Conn) (net.Conn, error) {
+
+	block, err := enc.NewBlock(this.BlockConfig)
+	if err != nil {
+		return nil, err
+	}
+
+	return NewCryptConn(c, block)
+}
+
+func (this *CryptLayerContext) NewListener(l net.Listener) (net.Listener, error) {
+	block, err := enc.NewBlock(this.BlockConfig)
+	if err != nil {
+		return nil, err
+	}
+
+	return &cryptListener{Listener:l, block:block}, nil
+}
+
+
+func (this *CryptLayerContext) 	Layer() conn.ConnLayer {
+	return conn.CRYPT_LAYER
+}

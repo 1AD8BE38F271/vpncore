@@ -19,52 +19,27 @@ package conn
 
 import (
 	"net"
-	"github.com/FTwOoO/vpncore/enc"
-	"errors"
 )
 
-type Listener struct {
-	listener    net.Listener
-	proto       TransProtocol
-	blockConfig *enc.BlockConfig
-}
-
-func NewListener(proto TransProtocol, listenAddr string, blockConfig *enc.BlockConfig) (net.Listener, error) {
-	switch proto {
-	case PROTO_KCP:
-		return &Listener{proto:proto, listener:&KCPListener{}, blockConfig:blockConfig}, nil
-	case PROTO_TCP:
-		addr, err := net.ResolveTCPAddr("tcp4", listenAddr)
-		if err != nil {
-			return nil, err
-		}
-		l, err := net.ListenTCP("tcp4", addr)
-		if err != nil {
-			return nil, err
-		}
-		return &Listener{proto:proto, listener:l, blockConfig:blockConfig}, nil
-	default:
-		return nil, errors.New("UNKOWN PROTOCOL!")
+func NewListener(contexts []ConnLayerContext) (l net.Listener, err error) {
+	if len(contexts) < 1 {
+		return nil, ErrInvalidArgs
 	}
-}
 
-func (l *Listener) Accept() (net.Conn, error) {
-	conn, err := l.listener.Accept()
+	ctx := contexts[0]
+	l, err = ctx.NewListener(nil)
 	if err != nil {
-		return nil, err
-	} else {
-		return NewConnection(conn, l.blockConfig)
+		return
 	}
-}
 
-// Close closes the listener.
-// Any blocked Accept operations will be unblocked and return errors.
-func (l *Listener) Close() error {
-	return l.listener.Close()
-}
+	for _, ctx := range contexts[1:] {
+		l, err = ctx.NewListener(l)
+		if err != nil {
+			return
+		}
 
-// Addr returns the listener's network address.
-func (l *Listener) Addr() net.Addr {
-	return l.listener.Addr()
-}
+	}
 
+	return l, err
+
+}

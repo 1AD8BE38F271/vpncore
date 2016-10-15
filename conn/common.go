@@ -16,12 +16,64 @@
  */
 
 package conn
+
 import (
+	"errors"
+	"net"
 	"strings"
 	"fmt"
 )
 
+
+var (
+	ErrInvalidArgs     = errors.New("Invalid arguments.")
+	ErrNoSession       = errors.New("session in pool but can't pick one.")
+	ErrSessionNotFound = errors.New("session not found.")
+	ErrAuthFailed      = errors.New("auth failed.")
+	ErrAuthTimeout     = errors.New("auth timeout %s.")
+	ErrStreamNotExist  = errors.New("stream not exist.")
+	ErrQueueClosed     = errors.New("queue closed.")
+	ErrUnexpectedPkg   = errors.New("unexpected package.")
+	ErrNotSyn          = errors.New("frame result in conn which status is not syn.")
+	ErrFinState        = errors.New("status not est or fin wait when get fin.")
+	ErrIdExist         = errors.New("frame sync stream id exist.")
+	ErrState           = errors.New("status error.")
+	ErrUnknownState    = errors.New("unknown status.")
+	ErrChanClosed      = errors.New("chan closed.")
+	ErrDnsTimeOut      = errors.New("dns timeout.")
+	ErrDnsMsgIllegal   = errors.New("dns message illegal.")
+	ErrNoDnsServer     = errors.New("no proper dns server.")
+)
+
+type ConnLayer int
+const (
+	STREAM_LAYER = ConnLayer(1)
+	OBS_LAYER = ConnLayer(2)
+	CRYPT_LAYER = ConnLayer(3)
+	AUTH_LAYER = ConnLayer(4)
+	APPCATIOIN_LAYER = ConnLayer(5)
+)
+
+type ConnDialer interface {
+	Dial(net.Conn) (net.Conn, error)
+}
+
+type ConnListener interface {
+	NewListener(net.Listener) (net.Listener, error)
+}
+
+type ConnLayerContext interface {
+	Layer() ConnLayer
+	ConnDialer
+	ConnListener
+}
+
 type TransProtocol string
+const (
+	PROTO_TCP = TransProtocol("tcp")
+	PROTO_KCP = TransProtocol("kcp")
+	PROTO_OBFS4 = TransProtocol("obfs4")
+)
 
 func (self *TransProtocol) UnmarshalTOML(data []byte) (err error) {
 	name := string(data)
@@ -37,10 +89,3 @@ func (self *TransProtocol) UnmarshalTOML(data []byte) (err error) {
 	}
 	return
 }
-
-const (
-	PROTO_TCP = TransProtocol("tcp")
-	PROTO_KCP = TransProtocol("kcp")
-	PROTO_OBFS4 = TransProtocol("obfs4")
-)
-

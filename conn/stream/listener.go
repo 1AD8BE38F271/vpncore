@@ -15,31 +15,23 @@
  * Author: FTwOoO <booobooob@gmail.com>
  */
 
-package conn
+package stream
 
 import (
 	"net"
+	"github.com/FTwOoO/vpncore/conn"
 )
 
-func Dial(contexts []ConnLayerContext) (c net.Conn, err error) {
-	if len(contexts) < 1 {
-		return nil, ErrInvalidArgs
-	}
-
-	ctx := contexts[0]
-	c, err = ctx.Dial(nil)
-	if err != nil {
-		return
-	}
-
-	for _, ctx := range contexts[1:] {
-		c, err = ctx.Dial(c)
-		if err != nil {
-			return
-		}
-
-	}
-
-	return c, err
+type streamListener struct {
+	net.Listener
+	proto    conn.TransProtocol
 }
 
+func (l *streamListener) Accept() (net.Conn, error) {
+	c, err := l.Listener.Accept()
+	if err != nil {
+		return nil, err
+	} else {
+		return &streamConn{Conn:c, proto:l.proto}, nil
+	}
+}
