@@ -27,6 +27,7 @@ import (
 
 var (
 	ErrInvalidArgs     = errors.New("Invalid arguments.")
+	ErrInvalidCtx      = errors.New("Invalid context")
 	ErrNoSession       = errors.New("session in pool but can't pick one.")
 	ErrSessionNotFound = errors.New("session not found.")
 	ErrAuthFailed      = errors.New("auth failed.")

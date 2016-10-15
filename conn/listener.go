@@ -27,6 +27,10 @@ func NewListener(contexts []ConnLayerContext) (l net.Listener, err error) {
 	}
 
 	ctx := contexts[0]
+	if ctx.Layer() != STREAM_LAYER {
+		return nil, ErrInvalidCtx
+	}
+
 	l, err = ctx.NewListener(nil)
 	if err != nil {
 		return

@@ -27,6 +27,10 @@ func Dial(contexts []ConnLayerContext) (c net.Conn, err error) {
 	}
 
 	ctx := contexts[0]
+	if ctx.Layer() != STREAM_LAYER {
+		return nil, ErrInvalidCtx
+	}
+
 	c, err = ctx.Dial(nil)
 	if err != nil {
 		return
