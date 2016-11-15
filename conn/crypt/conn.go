@@ -19,7 +19,7 @@ package crypt
 
 import (
 	"net"
-	"github.com/FTwOoO/vpncore/enc"
+	"github.com/1AD8BE38F271/vpncore/enc"
 )
 
 

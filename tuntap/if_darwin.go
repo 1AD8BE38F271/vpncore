@@ -21,8 +21,8 @@ import (
 	"net"
 	"fmt"
 	"errors"
-	"github.com/FTwOoO/vpncore/cmd"
-	"github.com/FTwOoO/vpncore/routes"
+	"github.com/1AD8BE38F271/vpncore/cmd"
+	"github.com/1AD8BE38F271/vpncore/routes"
 )
 
 func maskToString(m net.IPMask) string {

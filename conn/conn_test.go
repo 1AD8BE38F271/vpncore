@@ -13,13 +13,14 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  *
  * Author: FTwOoO <booobooob@gmail.com>
+ * Modification Author: 1AD8BE38F271 <1AD8BE38F271@protonmail.com>
  */
 
 package conn_test
 
 import (
 	"testing"
-	"github.com/FTwOoO/vpncore/enc"
+	"github.com/1AD8BE38F271/vpncore/enc"
 	"fmt"
 	"time"
 	"io"
@@ -27,9 +28,10 @@ import (
 	crand "crypto/rand"
 	mrand "math/rand"
 	"sync"
-	"github.com/FTwOoO/vpncore/conn/crypt"
-	"github.com/FTwOoO/vpncore/conn/stream"
-	"github.com/FTwOoO/vpncore/conn"
+	"github.com/1AD8BE38F271/vpncore/conn/crypt"
+	"github.com/1AD8BE38F271/vpncore/conn/stream"
+	"github.com/1AD8BE38F271/vpncore/conn"
+    . "github.com/1AD8BE38F271/vpncore"
 )
 
 func TestNewListener(t *testing.T) {
@@ -41,7 +43,7 @@ func TestNewListener(t *testing.T) {
 
 	for _, testDatalen := range testDatalens {
 		for _, cipher := range testCiphers {
-			fmt.Printf("Test PROTOCOL[%s] with ENCRYPTION[%s] PASS[%s] DATALEN[%d]\n", proto, cipher, password, testDatalen)
+			Logger.Infof("Test PROTOCOL[%s] with ENCRYPTION[%s] PASS[%s] DATALEN[%d]\n", proto, cipher, password, testDatalen)
 			testOneConnection(t, proto, cipher, port, password, testDatalen)
 
 		}
@@ -63,7 +65,7 @@ func testOneConnection(t *testing.T, proto conn.TransProtocol, cipher enc.Cipher
 
 	testData := make([]byte, testDatalen)
 	io.ReadFull(crand.Reader, testData)
-	fmt.Printf("Test data is %v...\n", testData[:0x10])
+	Logger.Infof("Test data is %v...\n", testData[:0x10])
 
 	var wg sync.WaitGroup
 	wg.Add(2)
@@ -92,7 +94,7 @@ func testOneConnection(t *testing.T, proto conn.TransProtocol, cipher enc.Cipher
 				t.Fatal(err)
 			}
 
-			fmt.Printf("Read %d bytes: %v...\n", n, expectedData[areadyRead:areadyRead + 0x10])
+			Logger.Infof("Read %d bytes: %v...\n", n, expectedData[areadyRead:areadyRead + 0x10])
 			areadyRead += n
 		}
 
@@ -117,7 +119,7 @@ func testOneConnection(t *testing.T, proto conn.TransProtocol, cipher enc.Cipher
 			if err != nil {
 				t.Fatal(err)
 			}
-			fmt.Printf("Write %d bytes: %v...\n", n, testData[areadyWrite:areadyWrite + 0x10])
+			Logger.Infof("Write %d bytes: %v...\n", n, testData[areadyWrite:areadyWrite + 0x10])
 			areadyWrite += n
 		}
 	}()

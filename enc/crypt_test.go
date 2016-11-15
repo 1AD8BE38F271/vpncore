@@ -25,11 +25,11 @@ import (
 	crand "crypto/rand"
 	"io"
 	"testing"
-	"fmt"
+    . "github.com/1AD8BE38F271/vpncore"
 )
 
 func EnryptionOne(t *testing.T, encrytion Cipher, testKey string, testDataLen int) {
-	fmt.Printf("Test %s for EnryptionOne with key[%s] and test data length %d\n", encrytion, testKey, testDataLen)
+	Logger.Infof("Test %s for EnryptionOne with key[%s] and test data length %d\n", encrytion, testKey, testDataLen)
 
 	bc, err := NewBlock(&BlockConfig{Cipher:encrytion, Password:testKey})
 	if err != nil {
@@ -58,7 +58,7 @@ func EnryptionStreaming(t *testing.T, encrytion Cipher, testKey string, testData
 	len1 := mrand.Intn(testDataLen) + testDataLen
 	len2 := mrand.Intn(testDataLen) + testDataLen
 	len3 := mrand.Intn(testDataLen) + testDataLen
-	fmt.Printf("Test %s for EnryptionStreaming with data length %d-%d-%d\n", encrytion, len1, len2, len3)
+	Logger.Infof("Test %s for EnryptionStreaming with data length %d-%d-%d\n", encrytion, len1, len2, len3)
 
 	data1 := make([]byte, len1)
 	data2 := make([]byte, len2)

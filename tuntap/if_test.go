@@ -13,6 +13,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  *
  * Author: FTwOoO <booobooob@gmail.com>
+ * Modification Author: 1AD8BE38F271 <1AD8BE38F271@protonmail.com>
  */
 package tuntap
 
@@ -23,10 +24,11 @@ import (
 	"fmt"
 	"encoding/hex"
 	"sync"
-	"github.com/FTwOoO/vpncore/tcpip"
-	"github.com/FTwOoO/vpncore/routes"
+	"github.com/1AD8BE38F271/vpncore/tcpip"
+	"github.com/1AD8BE38F271/vpncore/routes"
 
-	"github.com/FTwOoO/vpncore/cmd"
+	"github.com/1AD8BE38F271/vpncore/cmd"
+    . "github.com/1AD8BE38F271/vpncore"
 )
 
 const BUFFERSIZE = 1522
@@ -39,11 +41,11 @@ func startRead(wg *sync.WaitGroup, ch chan <- []byte, ifce *Interface) {
 		buffer := make([]byte, BUFFERSIZE)
 		n, err := ifce.Read(buffer)
 		if err == nil {
-			fmt.Printf("Received a packet(%d bytes from %s)\n", n, ifce.Name())
+			Logger.Infof("Received a packet(%d bytes from %s)\n", n, ifce.Name())
 			buffer = buffer[:n:n]
 			ch <- buffer
 		} else {
-			fmt.Println(err)
+			Logger.Error(err)
 			return
 		}
 	}
@@ -129,7 +131,7 @@ func testInterface(ifce *Interface, ip net.IP, subnet net.IPNet) {
 			if ipPacket.Protocol() != tcpip.ICMP {
 				continue readFrame
 			}
-			fmt.Printf("Received ICMP frame: %#v\n", hex.EncodeToString(ipPacket))
+			Logger.Infof("Received ICMP frame: %#v\n", hex.EncodeToString(ipPacket))
 			break readFrame
 
 		case <-timeout:
@@ -138,7 +140,7 @@ func testInterface(ifce *Interface, ip net.IP, subnet net.IPNet) {
 		}
 	}
 
-	fmt.Printf("Close the iterface %s\n", ifce.Name())
+	Logger.Infof("Close the iterface %s\n", ifce.Name())
 	ifce.Close()
 	wg.Wait()
 
@@ -153,7 +155,7 @@ func TestAll(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	fmt.Printf("create %s\n", ifce.Name())
+	Logger.Infof("create %s\n", ifce.Name())
 	testInterface(ifce, ip, subnet)
 	ifce.Close()
 
@@ -161,7 +163,7 @@ func TestAll(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	fmt.Printf("create %s\n", ifce2.Name())
+	Logger.Infof("create %s\n", ifce2.Name())
 	testInterface(ifce2, ip, subnet)
 	ifce2.Close()
 

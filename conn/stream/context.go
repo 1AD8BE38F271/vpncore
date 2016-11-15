@@ -20,7 +20,7 @@ package stream
 import (
 	"net"
 	"errors"
-	"github.com/FTwOoO/vpncore/conn"
+	"github.com/1AD8BE38F271/vpncore/conn"
 )
 
 type StreamLayerContext struct {

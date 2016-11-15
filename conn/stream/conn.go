@@ -18,7 +18,7 @@
 package stream
 import (
 	"net"
-	"github.com/FTwOoO/vpncore/conn"
+	"github.com/1AD8BE38F271/vpncore/conn"
 )
 type streamConn struct {
 	net.Conn

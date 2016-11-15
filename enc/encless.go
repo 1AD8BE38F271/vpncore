@@ -21,8 +21,8 @@ package enc
 import (
 	"io"
 	"crypto/rand"
-	"github.com/FTwOoO/vpncore/enc/cnw"
-	"github.com/FTwOoO/vpncore/enc/aont"
+	"github.com/1AD8BE38F271/vpncore/enc/cnw"
+	"github.com/1AD8BE38F271/vpncore/enc/aont"
 )
 
 var (

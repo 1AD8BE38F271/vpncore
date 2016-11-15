@@ -14,6 +14,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  *
  * Author: FTwOoO <booobooob@gmail.com>
+ * Modification Author: 1AD8BE38F271 <1AD8BE38F271@protonmail.com>
  */
 package tuntap
 
@@ -23,6 +24,7 @@ import (
 	"syscall"
 	"unsafe"
 	"fmt"
+    . "github.com/1AD8BE38F271/vpncore"
 )
 
 const (
@@ -71,7 +73,7 @@ func newTUN(ifName string) (ifce *Interface, err error) {
 
 	name, err := createInterface(file.Fd(), ifName, cIFF_TUN | cIFF_NO_PI)
 	if err != nil {
-		fmt.Println("err %v", err)
+		Logger.Errorf("err %v", err)
 
 		return nil, err
 	}

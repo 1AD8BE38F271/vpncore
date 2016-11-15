@@ -12,26 +12,14 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  *
- * Author: FTwOoO <booobooob@gmail.com>
+ * Author: 1AD8BE38F271 <1AD8BE38F271@protonmail.com>
  */
 
-package stream
+package vpncore
 
 import (
-	"net"
-	"github.com/1AD8BE38F271/vpncore/conn"
+    "github.com/FTwOoO/go-logger"
 )
 
-type streamListener struct {
-	net.Listener
-	proto    conn.TransProtocol
-}
+var Logger *logger.Logger
 
-func (l *streamListener) Accept() (net.Conn, error) {
-	c, err := l.Listener.Accept()
-	if err != nil {
-		return nil, err
-	} else {
-		return &streamConn{Conn:c, proto:l.proto}, nil
-	}
-}

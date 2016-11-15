@@ -13,6 +13,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  *
  * Author: FTwOoO <booobooob@gmail.com>
+ * Modification Author: 1AD8BE38F271 <1AD8BE38F271@protonmail.com>
  */
 
 package cmd
@@ -20,20 +21,20 @@ package cmd
 import (
 	"strings"
 	"os/exec"
-	"fmt"
+
+    . "github.com/1AD8BE38F271/vpncore"
 )
 
 func RunCommand(cmd string) (out string, err error) {
-
 	args := strings.Split(cmd, " ")
 	command := exec.Command(args[0], args[1:]...)
 
 	out_bytes, err := command.CombinedOutput()
 	out = string(out_bytes)
 	if err != nil {
-		fmt.Printf("RUN[%s]==>\n %s==================\n", cmd, out)
+		Logger.Warningf("RUN[%s] ==> %s", cmd, out)
 		return
 	}
-	fmt.Printf("RUN[%s]==>\n %s==================\n", cmd, out)
+	Logger.Infof("RUN[%s] ==> %s", cmd, out)
 	return
 }
